@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Volunteer {
+    id                      String    @default(cuid()) @id
+    name                    String
+    city                    String
+    verificationState       String
+    socialProviderIds       String[]
+    donationOptionIds       String[]
+    volunteerActivityIds    String[]
+}
+
+model SocialProvider {
+    id                      String    @default(cuid()) @id
+    provider                String
+    url                     String
+    volunteerId             String
+}
+
+model DonationOption {
+    id                      String     @default(cuid()) @id
+    type                    String
+    volunteerId             String
+    valuesIds               String[]
+}
+
+model DonationOptionValue {
+    id                      String     @default(cuid()) @id
+    key                     String
+    value                   String
+}
+
+model VolunteerActivityType {
+    id                      String  @default(cuid()) @id
+    title                   String
+}
