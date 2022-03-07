@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { VolunteerDto } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
+import {
+  SearchVolunteersRequest,
+  VolunteerDto,
+} from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import { Volunteer } from '@prisma/client';
 
 @Injectable()
@@ -26,9 +29,13 @@ export class VolunteerService {
     }
   }
 
-  async searchVolunteers(): Promise<VolunteerDto[] | null> {
+  async searchVolunteers(
+    request: SearchVolunteersRequest,
+  ): Promise<VolunteerDto[] | null> {
     try {
-      return [];
+      const volunteers = await this.prisma.volunteer.findMany({});
+
+      return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
     } catch (e) {
       this.logger.error(e);
       return null;
@@ -36,15 +43,7 @@ export class VolunteerService {
   }
 
   private mapVolunteer(volunteer: Volunteer): VolunteerDto {
-    const {
-      id,
-      name,
-      city,
-      verificationState,
-      socialProviderIds,
-      donationOptionIds,
-      volunteerActivityIds,
-    } = volunteer;
+    const { id, name } = volunteer;
 
     return {
       id,

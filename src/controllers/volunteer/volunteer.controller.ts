@@ -15,7 +15,7 @@ export class VolunteerController {
     request: SearchVolunteersRequest,
   ): Promise<SearchVolunteersResponse> {
     const volunteers =
-      (await this.volunteerService.searchVolunteers()) || undefined;
+      (await this.volunteerService.searchVolunteers(request)) || undefined;
 
     return { volunteers };
   }
