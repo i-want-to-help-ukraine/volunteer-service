@@ -11,6 +11,7 @@ import {
   AddPaymentOptionRequest,
   UpdatePaymentOptionRequest,
   DeletePaymentOptionRequest,
+  CitiesResponse,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 
 @Controller('volunteer')
@@ -73,11 +74,18 @@ export class VolunteerController {
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getPaymentOptionsByIds')
-  async getVolunteerActivitiesByIds(
+  async getPaymentOptionsByIds(
     request: GetByIdsRequest,
   ): Promise<PaymentOptionsResponse> {
     return {
       paymentOptions: [],
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'getCitiesByIds')
+  async getCitiesByIds(request: GetByIdsRequest): Promise<CitiesResponse> {
+    return {
+      cities: [],
     };
   }
 }

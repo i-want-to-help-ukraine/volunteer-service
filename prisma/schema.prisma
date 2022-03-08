@@ -11,36 +11,95 @@ datasource db {
 }
 
 model Volunteer {
-    id                      String    @default(cuid()) @id
+    id                      String                      @default(cuid()) @id
     name                    String
-    city                    String
     verificationState       String
-    socialProviderIds       String[]
-    donationOptionIds       String[]
-    volunteerActivityIds    String[]
+    cities                  CitiesOnVolunteers[]
+    activities              ActivitiesOnVolunteers[]
+    social                  VolunteerSocial[]
+    paymentOptions          VolunteerPaymentOption[]
+}
+
+model CitiesOnVolunteers {
+    volunteer               Volunteer    @relation(fields: [volunteerId], references: [id])
+    volunteerId             String
+    city                    City         @relation(fields: [cityId], references: [id])
+    cityId                  String
+    assignedAt DateTime @default(now())
+    assignedBy String
+
+    @@id([volunteerId, cityId])
+}
+
+model ActivitiesOnVolunteers {
+    volunteer               Volunteer   @relation(fields: [volunteerId], references: [id])
+    volunteerId             String
+    activity                Activity    @relation(fields: [activityId], references: [id])
+    activityId              String
+    assignedAt              DateTime    @default(now())
+    assignedBy              String
+
+    @@id([volunteerId, activityId])
+}
+
+model VolunteerSocial {
+    id                      String                              @default(cuid()) @id
+    url                     String
+    providers               SocialProvidersOnVolunteerSocial[]
+    volunteer               Volunteer                           @relation(fields: [volunteerId], references: [id])
+    volunteerId             String
+}
+
+model SocialProvidersOnVolunteerSocial {
+    volunteerSocial         VolunteerSocial    @relation(fields: [volunteerSocialId], references: [id])
+    volunteerSocialId       String
+    socialProvider          SocialProvider     @relation(fields: [socialProviderId], references: [id])
+    socialProviderId        String
+    assignedAt              DateTime     @default(now())
+    assignedBy              String
+
+    @@id([volunteerSocialId, socialProviderId])
+}
+
+model VolunteerPaymentOption {
+    id                        String                          @default(cuid()) @id
+    values                    Json
+    paymentProviders          PaymentProvidersOnVolunteerPaymentOptions[]
+    volunteer                 Volunteer                       @relation(fields: [volunteerId], references: [id])
+    volunteerId               String
+}
+
+model PaymentProvidersOnVolunteerPaymentOptions {
+    volunteerPaymentOption      VolunteerPaymentOption    @relation(fields: [volunteerPaymentOptionId], references: [id])
+    volunteerPaymentOptionId    String
+    paymentProvider             PaymentProvider           @relation(fields: [paymentProviderId], references: [id])
+    paymentProviderId           String
+    assignedAt                  DateTime                  @default(now())
+    assignedBy                  String
+
+    @@id([volunteerPaymentOptionId, paymentProviderId])
 }
 
 model SocialProvider {
     id                      String    @default(cuid()) @id
     provider                String
-    url                     String
-    volunteerId             String
+    volunteerSocial         SocialProvidersOnVolunteerSocial[]
 }
 
-model DonationOption {
-    id                      String     @default(cuid()) @id
-    type                    String
-    volunteerId             String
-    valuesIds               String[]
-}
-
-model DonationOptionValue {
-    id                      String     @default(cuid()) @id
-    key                     String
-    value                   String
-}
-
-model VolunteerActivityType {
-    id                      String  @default(cuid()) @id
+model PaymentProvider {
+    id                      String    @default(cuid()) @id
     title                   String
+    paymentOptions          PaymentProvidersOnVolunteerPaymentOptions[]
+}
+
+model City {
+    id                      String    @default(cuid()) @id
+    title                   String
+    volunteers              CitiesOnVolunteers[]
+}
+
+model Activity {
+    id                      String    @default(cuid()) @id
+    title                   String
+    volunteers              ActivitiesOnVolunteers[]
 }

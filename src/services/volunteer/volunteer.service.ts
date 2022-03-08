@@ -16,12 +16,10 @@ export class VolunteerService {
     request: SearchVolunteersRequest,
   ): Promise<VolunteerDto[] | null> {
     try {
-      const { city } = request;
+      const { cityIds } = request;
 
       const volunteers = await this.prisma.volunteer.findMany({
-        where: {
-          city,
-        },
+        where: {},
       });
 
       return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
@@ -54,6 +52,7 @@ export class VolunteerService {
     return {
       id,
       name,
+      cityIds: [],
       activityIds: [],
       paymentOptionIds: [],
     };
