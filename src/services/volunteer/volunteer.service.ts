@@ -12,6 +12,25 @@ export class VolunteerService {
 
   constructor(private prisma: PrismaService) {}
 
+  async searchVolunteers(
+    request: SearchVolunteersRequest,
+  ): Promise<VolunteerDto[] | null> {
+    try {
+      const { city } = request;
+
+      const volunteers = await this.prisma.volunteer.findMany({
+        where: {
+          city,
+        },
+      });
+
+      return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
   async getVolunteersByIds(ids: string[]): Promise<VolunteerDto[] | null> {
     try {
       const volunteers = await this.prisma.volunteer.findMany({
@@ -29,27 +48,14 @@ export class VolunteerService {
     }
   }
 
-  async searchVolunteers(
-    request: SearchVolunteersRequest,
-  ): Promise<VolunteerDto[] | null> {
-    try {
-      const volunteers = await this.prisma.volunteer.findMany({});
-
-      return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
-    } catch (e) {
-      this.logger.error(e);
-      return null;
-    }
-  }
-
   private mapVolunteer(volunteer: Volunteer): VolunteerDto {
     const { id, name } = volunteer;
 
     return {
       id,
       name,
-      activities: [],
-      donateOptions: [],
+      activityIds: [],
+      paymentOptionIds: [],
     };
   }
 }
