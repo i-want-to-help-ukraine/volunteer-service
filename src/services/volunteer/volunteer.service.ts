@@ -68,14 +68,16 @@ export class VolunteerService {
     }
   }
 
-  async getVolunteerCities(volunteerId: string): Promise<CityDto[]> {
+  async getVolunteerCities(volunteerIds: string[]): Promise<CityDto[]> {
     try {
       return this.prisma.city.findMany({
         where: {
           volunteers: {
             some: {
               volunteer: {
-                id: volunteerId,
+                id: {
+                  in: volunteerIds,
+                },
               },
             },
           },
@@ -87,14 +89,16 @@ export class VolunteerService {
     }
   }
 
-  async getVolunteerActivities(volunteerId: string): Promise<ActivityDto[]> {
+  async getVolunteerActivities(volunteerIds: string[]): Promise<ActivityDto[]> {
     try {
       return this.prisma.activity.findMany({
         where: {
           volunteers: {
             some: {
               volunteer: {
-                id: volunteerId,
+                id: {
+                  in: volunteerIds,
+                },
               },
             },
           },
@@ -106,11 +110,17 @@ export class VolunteerService {
     }
   }
 
-  async getVolunteerSocial(volunteerId: string): Promise<VolunteerSocialDto[]> {
+  async getVolunteerSocial(
+    volunteerIds: string[],
+  ): Promise<VolunteerSocialDto[]> {
     try {
       return this.prisma.volunteerSocial.findMany({
         where: {
-          volunteerId,
+          volunteer: {
+            id: {
+              in: volunteerIds,
+            },
+          },
         },
       });
     } catch (e) {
@@ -120,12 +130,16 @@ export class VolunteerService {
   }
 
   async getVolunteerPaymentOptions(
-    volunteerId: string,
+    volunteerIds: string[],
   ): Promise<VolunteerPaymentOptionDto[]> {
     try {
       const paymentOptions = await this.prisma.volunteerPaymentOption.findMany({
         where: {
-          volunteerId,
+          volunteer: {
+            id: {
+              in: volunteerIds,
+            },
+          },
         },
       });
 

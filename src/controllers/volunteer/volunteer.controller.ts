@@ -10,13 +10,13 @@ import {
   ActivitiesDto,
   SocialProvidersDto,
   PaymentProvidersDto,
-  VolunteerIdRequestDto,
   VolunteerSocialResponseDto,
   VolunteerPaymentOptionResponseDto,
   CreatePaymentOptionDto,
   VolunteerResponseDto,
   UpdatePaymentOptionDto,
   DeletePaymentOptionDto,
+  VolunteerIdsRequestDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 
 @Controller('volunteer')
@@ -31,7 +31,7 @@ export class VolunteerController {
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getCities')
-  async getCities(request: GetByIdsDto): Promise<CitiesDto> {
+  async getCities(): Promise<CitiesDto> {
     const cities = await this.volunteerService.getCities();
 
     return {
@@ -40,7 +40,7 @@ export class VolunteerController {
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getActivities')
-  async getActivities(request: GetByIdsDto): Promise<ActivitiesDto> {
+  async getActivities(): Promise<ActivitiesDto> {
     const activities = await this.volunteerService.getActivities();
 
     return {
@@ -49,7 +49,7 @@ export class VolunteerController {
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getSocialProviders')
-  async getSocialProviders(request: GetByIdsDto): Promise<SocialProvidersDto> {
+  async getSocialProviders(): Promise<SocialProvidersDto> {
     const socialProviders = await this.volunteerService.getSocialProviders();
 
     return {
@@ -58,9 +58,7 @@ export class VolunteerController {
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getPaymentProviders')
-  async getPaymentProviders(
-    request: GetByIdsDto,
-  ): Promise<PaymentProvidersDto> {
+  async getPaymentProviders(): Promise<PaymentProvidersDto> {
     const paymentProvider = await this.volunteerService.getPaymentProviders();
 
     return {
@@ -69,9 +67,11 @@ export class VolunteerController {
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getVolunteerCities')
-  async getVolunteerCities(request: VolunteerIdRequestDto): Promise<CitiesDto> {
+  async getVolunteerCities(
+    request: VolunteerIdsRequestDto,
+  ): Promise<CitiesDto> {
     const cities = await this.volunteerService.getVolunteerCities(
-      request.volunteerId,
+      request.volunteerIds,
     );
 
     return {
@@ -81,10 +81,10 @@ export class VolunteerController {
 
   @GrpcMethod('VolunteerServiceRPC', 'getVolunteerActivities')
   async getVolunteerActivities(
-    request: VolunteerIdRequestDto,
+    request: VolunteerIdsRequestDto,
   ): Promise<ActivitiesDto> {
     const activities = await this.volunteerService.getVolunteerActivities(
-      request.volunteerId,
+      request.volunteerIds,
     );
 
     return {
@@ -94,10 +94,10 @@ export class VolunteerController {
 
   @GrpcMethod('VolunteerServiceRPC', 'getVolunteerSocial')
   async getVolunteerSocial(
-    request: VolunteerIdRequestDto,
+    request: VolunteerIdsRequestDto,
   ): Promise<VolunteerSocialResponseDto> {
     const volunteerSocial = await this.volunteerService.getVolunteerSocial(
-      request.volunteerId,
+      request.volunteerIds,
     );
 
     return {
@@ -107,11 +107,11 @@ export class VolunteerController {
 
   @GrpcMethod('VolunteerServiceRPC', 'getVolunteerPaymentOptions')
   async getVolunteerPaymentOptions(
-    request: VolunteerIdRequestDto,
+    request: VolunteerIdsRequestDto,
   ): Promise<VolunteerPaymentOptionResponseDto> {
     const paymentOptions =
       await this.volunteerService.getVolunteerPaymentOptions(
-        request.volunteerId,
+        request.volunteerIds,
       );
 
     return {
