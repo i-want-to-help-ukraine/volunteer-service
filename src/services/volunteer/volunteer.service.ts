@@ -9,6 +9,7 @@ import {
   VolunteerPaymentOptionDto,
   VolunteerSocialDto,
   SocialProviderDto,
+  CreateVolunteerDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import { Volunteer, City, VolunteerPaymentOption } from '@prisma/client';
 
@@ -67,18 +68,38 @@ export class VolunteerService {
     }
   }
 
-  async getVolunteerCities(): Promise<CityDto[]> {
+  async getVolunteerCities(volunteerId: string): Promise<CityDto[]> {
     try {
-      return this.prisma.city.findMany({});
+      return this.prisma.city.findMany({
+        where: {
+          volunteers: {
+            some: {
+              volunteer: {
+                id: volunteerId,
+              },
+            },
+          },
+        },
+      });
     } catch (e) {
       this.logger.error(e);
       return null;
     }
   }
 
-  async getVolunteerActivities(): Promise<ActivityDto[]> {
+  async getVolunteerActivities(volunteerId: string): Promise<ActivityDto[]> {
     try {
-      return this.prisma.activity.findMany({});
+      return this.prisma.activity.findMany({
+        where: {
+          volunteers: {
+            some: {
+              volunteer: {
+                id: volunteerId,
+              },
+            },
+          },
+        },
+      });
     } catch (e) {
       this.logger.error(e);
       return null;
@@ -134,6 +155,45 @@ export class VolunteerService {
     }
   }
 
+  async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
+    console.log('request', request);
+    const citiesCreate = request.citiesIds.map((cityId) => ({
+      city: {
+        connect: {
+          id: cityId,
+        },
+      },
+    }));
+
+    const activitiesCreate = request.activitiesIds.map((activityId) => ({
+      activity: {
+        connect: {
+          id: activityId,
+        },
+      },
+    }));
+
+    try {
+      const createdVolunteer = await this.prisma.volunteer.create({
+        data: {
+          name: request.name,
+          verificationState: 'requested',
+          cities: {
+            create: citiesCreate,
+          },
+          activities: {
+            create: activitiesCreate,
+          },
+        },
+      });
+
+      return this.mapVolunteer(createdVolunteer);
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
   private mapVolunteerPaymentOption(
     volunteerPaymentOption: VolunteerPaymentOption,
   ): VolunteerPaymentOptionDto {
@@ -154,10 +214,6 @@ export class VolunteerService {
       id,
       name,
       verificationState,
-      cities: null,
-      activities: null,
-      social: null,
-      paymentOption: null,
     };
   }
 }

@@ -16,6 +16,7 @@ import {
   VolunteerIdRequest,
   VolunteerSocialResponse,
   VolunteerPaymentOptionResponse,
+  CreateVolunteerDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 
 @Controller('volunteer')
@@ -73,7 +74,9 @@ export class VolunteerController {
   async getVolunteerCities(
     request: VolunteerIdRequest,
   ): Promise<CitiesResponse> {
-    const cities = await this.volunteerService.getVolunteerCities();
+    const cities = await this.volunteerService.getVolunteerCities(
+      request.volunteerId,
+    );
 
     return {
       cities,
@@ -84,7 +87,9 @@ export class VolunteerController {
   async getVolunteerActivities(
     request: VolunteerIdRequest,
   ): Promise<ActivitiesResponse> {
-    const activities = await this.volunteerService.getVolunteerActivities();
+    const activities = await this.volunteerService.getVolunteerActivities(
+      request.volunteerId,
+    );
 
     return {
       activities,
@@ -154,5 +159,16 @@ export class VolunteerController {
     request: DeletePaymentOptionRequest,
   ): Promise<VolunteerResponse> {
     return {};
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'createVolunteer')
+  async createVolunteer(
+    request: CreateVolunteerDto,
+  ): Promise<VolunteerResponse> {
+    const volunteer = await this.volunteerService.createVolunteer(request);
+
+    return {
+      volunteer,
+    };
   }
 }

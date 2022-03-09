@@ -25,8 +25,6 @@ model CitiesOnVolunteers {
     volunteerId             String
     city                    City         @relation(fields: [cityId], references: [id])
     cityId                  String
-    assignedAt DateTime @default(now())
-    assignedBy String
 
     @@id([volunteerId, cityId])
 }
@@ -36,8 +34,6 @@ model ActivitiesOnVolunteers {
     volunteerId             String
     activity                Activity    @relation(fields: [activityId], references: [id])
     activityId              String
-    assignedAt              DateTime    @default(now())
-    assignedBy              String
 
     @@id([volunteerId, activityId])
 }
@@ -55,8 +51,6 @@ model SocialProvidersOnVolunteerSocial {
     volunteerSocialId       String
     socialProvider          SocialProvider     @relation(fields: [socialProviderId], references: [id])
     socialProviderId        String
-    assignedAt              DateTime     @default(now())
-    assignedBy              String
 
     @@id([volunteerSocialId, socialProviderId])
 }
@@ -74,8 +68,6 @@ model PaymentProvidersOnVolunteerPaymentOptions {
     volunteerPaymentOptionId    String
     paymentProvider             PaymentProvider           @relation(fields: [paymentProviderId], references: [id])
     paymentProviderId           String
-    assignedAt                  DateTime                  @default(now())
-    assignedBy                  String
 
     @@id([volunteerPaymentOptionId, paymentProviderId])
 }
