@@ -49,7 +49,7 @@ CREATE TABLE "SocialProvidersOnVolunteerSocial" (
 -- CreateTable
 CREATE TABLE "VolunteerPaymentOption" (
     "id" TEXT NOT NULL,
-    "values" JSONB NOT NULL,
+    "metadata" JSONB NOT NULL,
     "volunteerId" TEXT NOT NULL,
 
     CONSTRAINT "VolunteerPaymentOption_pkey" PRIMARY KEY ("id")
