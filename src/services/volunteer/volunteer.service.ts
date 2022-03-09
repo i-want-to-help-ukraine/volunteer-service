@@ -4,12 +4,12 @@ import {
   ActivityDto,
   CityDto,
   PaymentProviderDto,
-  SearchVolunteersRequest,
   VolunteerDto,
   VolunteerPaymentOptionDto,
   VolunteerSocialDto,
   SocialProviderDto,
   CreateVolunteerDto,
+  SearchVolunteersDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import { Volunteer, City, VolunteerPaymentOption } from '@prisma/client';
 
@@ -20,7 +20,7 @@ export class VolunteerService {
   constructor(private prisma: PrismaService) {}
 
   async searchVolunteers(
-    request: SearchVolunteersRequest,
+    request: SearchVolunteersDto,
   ): Promise<VolunteerDto[] | null> {
     try {
       const volunteers = await this.prisma.volunteer.findMany({});
@@ -156,7 +156,6 @@ export class VolunteerService {
   }
 
   async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
-    console.log('request', request);
     const citiesCreate = request.citiesIds.map((cityId) => ({
       city: {
         connect: {
@@ -173,6 +172,19 @@ export class VolunteerService {
       },
     }));
 
+    const socialProviderCreate = request.social.map((volunteerSocial) => ({
+      url: volunteerSocial.url,
+      providers: {
+        create: {
+          socialProvider: {
+            connect: {
+              id: volunteerSocial.socialProviderId,
+            },
+          },
+        },
+      },
+    }));
+
     try {
       const createdVolunteer = await this.prisma.volunteer.create({
         data: {
@@ -183,6 +195,9 @@ export class VolunteerService {
           },
           activities: {
             create: activitiesCreate,
+          },
+          social: {
+            create: socialProviderCreate,
           },
         },
       });
@@ -201,8 +216,6 @@ export class VolunteerService {
 
     return {
       id,
-      metadata: '',
-      paymentProviders: null,
       volunteerId,
     };
   }
