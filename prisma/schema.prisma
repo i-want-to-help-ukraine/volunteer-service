@@ -63,7 +63,7 @@ model SocialProvidersOnVolunteerSocial {
 
 model VolunteerPaymentOption {
     id                        String                          @default(cuid()) @id
-    values                    Json
+    metadata                  Json
     paymentProviders          PaymentProvidersOnVolunteerPaymentOptions[]
     volunteer                 Volunteer                       @relation(fields: [volunteerId], references: [id])
     volunteerId               String
@@ -82,7 +82,7 @@ model PaymentProvidersOnVolunteerPaymentOptions {
 
 model SocialProvider {
     id                      String    @default(cuid()) @id
-    provider                String
+    title                   String
     volunteerSocial         SocialProvidersOnVolunteerSocial[]
 }
 
