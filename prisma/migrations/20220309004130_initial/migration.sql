@@ -11,8 +11,6 @@ CREATE TABLE "Volunteer" (
 CREATE TABLE "CitiesOnVolunteers" (
     "volunteerId" TEXT NOT NULL,
     "cityId" TEXT NOT NULL,
-    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "assignedBy" TEXT NOT NULL,
 
     CONSTRAINT "CitiesOnVolunteers_pkey" PRIMARY KEY ("volunteerId","cityId")
 );
@@ -21,8 +19,6 @@ CREATE TABLE "CitiesOnVolunteers" (
 CREATE TABLE "ActivitiesOnVolunteers" (
     "volunteerId" TEXT NOT NULL,
     "activityId" TEXT NOT NULL,
-    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "assignedBy" TEXT NOT NULL,
 
     CONSTRAINT "ActivitiesOnVolunteers_pkey" PRIMARY KEY ("volunteerId","activityId")
 );
@@ -40,8 +36,6 @@ CREATE TABLE "VolunteerSocial" (
 CREATE TABLE "SocialProvidersOnVolunteerSocial" (
     "volunteerSocialId" TEXT NOT NULL,
     "socialProviderId" TEXT NOT NULL,
-    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "assignedBy" TEXT NOT NULL,
 
     CONSTRAINT "SocialProvidersOnVolunteerSocial_pkey" PRIMARY KEY ("volunteerSocialId","socialProviderId")
 );
@@ -59,8 +53,6 @@ CREATE TABLE "VolunteerPaymentOption" (
 CREATE TABLE "PaymentProvidersOnVolunteerPaymentOptions" (
     "volunteerPaymentOptionId" TEXT NOT NULL,
     "paymentProviderId" TEXT NOT NULL,
-    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "assignedBy" TEXT NOT NULL,
 
     CONSTRAINT "PaymentProvidersOnVolunteerPaymentOptions_pkey" PRIMARY KEY ("volunteerPaymentOptionId","paymentProviderId")
 );
@@ -68,7 +60,7 @@ CREATE TABLE "PaymentProvidersOnVolunteerPaymentOptions" (
 -- CreateTable
 CREATE TABLE "SocialProvider" (
     "id" TEXT NOT NULL,
-    "provider" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
 
     CONSTRAINT "SocialProvider_pkey" PRIMARY KEY ("id")
 );
