@@ -31,6 +31,11 @@ export class VolunteerService {
     try {
       const { cityIds, activityIds } = request;
 
+      if (cityIds.length === 0 && activityIds.length === 0) {
+        const volunteers = await this.prisma.volunteer.findMany({});
+        return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
+      }
+
       const volunteers = await this.prisma.volunteer.findMany({
         where: {
           activities: {
