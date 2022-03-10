@@ -220,64 +220,15 @@ export class VolunteerService {
   }
 
   async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
-    const { firstname, lastname } = request;
-
-    const citiesCreate = request.citiesIds.map((cityId) => ({
-      city: {
-        connect: {
-          id: cityId,
-        },
-      },
-    }));
-
-    const activitiesCreate = request.activitiesIds.map((activityId) => ({
-      activity: {
-        connect: {
-          id: activityId,
-        },
-      },
-    }));
-
-    const socialProviderCreate = request.social.map((volunteerSocial) => ({
-      url: volunteerSocial.url,
-      providers: {
-        create: {
-          socialProvider: {
-            connect: {
-              id: volunteerSocial.socialProviderId,
-            },
-          },
-        },
-      },
-    }));
-
-    const contactsCreate = request.contacts.map((contact) => ({
-      metadata: contact.metadata,
-      contactProviders: {
-        create: {
-          contactProvider: {
-            connect: {
-              id: contact.contactProviderId,
-            },
-          },
-        },
-      },
-    }));
-
-    const paymentOptionsCreate = request.paymentOptions.map(
-      (paymentOption) => ({
-        metadata: paymentOption.metadata,
-        paymentProviders: {
-          create: {
-            paymentProvider: {
-              connect: {
-                id: paymentOption.paymentOptionId,
-              },
-            },
-          },
-        },
-      }),
-    );
+    const {
+      firstname,
+      lastname,
+      activityIds,
+      social,
+      cityIds,
+      contacts,
+      paymentOptions,
+    } = request;
 
     try {
       const createdVolunteer = await this.prisma.volunteer.create({
@@ -286,19 +237,64 @@ export class VolunteerService {
           lastname,
           verificationStatus: 'requested',
           cities: {
-            create: citiesCreate,
+            create: cityIds.map((cityId) => ({
+              city: {
+                connect: {
+                  id: cityId,
+                },
+              },
+            })),
           },
           activities: {
-            create: activitiesCreate,
+            create: activityIds.map((activityId) => ({
+              activity: {
+                connect: {
+                  id: activityId,
+                },
+              },
+            })),
           },
           social: {
-            create: socialProviderCreate,
+            create: social.map((volunteerSocial) => ({
+              url: volunteerSocial.url,
+              providers: {
+                create: {
+                  socialProvider: {
+                    connect: {
+                      id: volunteerSocial.socialProviderId,
+                    },
+                  },
+                },
+              },
+            })),
           },
           contacts: {
-            create: contactsCreate,
+            create: contacts.map((contact) => ({
+              metadata: contact.metadata,
+              contactProviders: {
+                create: {
+                  contactProvider: {
+                    connect: {
+                      id: contact.contactProviderId,
+                    },
+                  },
+                },
+              },
+            })),
           },
           paymentOptions: {
-            create: paymentOptionsCreate,
+            create: paymentOptions.map((paymentOption) => ({
+              metadata: paymentOption.metadata,
+              paymentProviders: {
+                create: {
+                  paymentProvider: {
+                    connect: {
+                      id: paymentOption.paymentOptionId,
+                    },
+                  },
+                },
+              },
+            })),
           },
         },
       });
