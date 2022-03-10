@@ -1,8 +1,9 @@
 -- CreateTable
 CREATE TABLE "Volunteer" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "verificationState" TEXT NOT NULL,
+    "firstname" TEXT NOT NULL,
+    "lastname" TEXT NOT NULL,
+    "verificationStatus" TEXT NOT NULL,
 
     CONSTRAINT "Volunteer_pkey" PRIMARY KEY ("id")
 );
@@ -58,6 +59,23 @@ CREATE TABLE "PaymentProvidersOnVolunteerPaymentOptions" (
 );
 
 -- CreateTable
+CREATE TABLE "VolunteerContact" (
+    "id" TEXT NOT NULL,
+    "metadata" JSONB NOT NULL,
+    "volunteerId" TEXT NOT NULL,
+
+    CONSTRAINT "VolunteerContact_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "VolunteerContactsOnContactProviders" (
+    "volunteerContactId" TEXT NOT NULL,
+    "contactProviderId" TEXT NOT NULL,
+
+    CONSTRAINT "VolunteerContactsOnContactProviders_pkey" PRIMARY KEY ("volunteerContactId","contactProviderId")
+);
+
+-- CreateTable
 CREATE TABLE "SocialProvider" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -71,6 +89,14 @@ CREATE TABLE "PaymentProvider" (
     "title" TEXT NOT NULL,
 
     CONSTRAINT "PaymentProvider_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContactProvider" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+
+    CONSTRAINT "ContactProvider_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -118,3 +144,12 @@ ALTER TABLE "PaymentProvidersOnVolunteerPaymentOptions" ADD CONSTRAINT "PaymentP
 
 -- AddForeignKey
 ALTER TABLE "PaymentProvidersOnVolunteerPaymentOptions" ADD CONSTRAINT "PaymentProvidersOnVolunteerPaymentOptions_paymentProviderI_fkey" FOREIGN KEY ("paymentProviderId") REFERENCES "PaymentProvider"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VolunteerContact" ADD CONSTRAINT "VolunteerContact_volunteerId_fkey" FOREIGN KEY ("volunteerId") REFERENCES "Volunteer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VolunteerContactsOnContactProviders" ADD CONSTRAINT "VolunteerContactsOnContactProviders_volunteerContactId_fkey" FOREIGN KEY ("volunteerContactId") REFERENCES "VolunteerContact"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VolunteerContactsOnContactProviders" ADD CONSTRAINT "VolunteerContactsOnContactProviders_contactProviderId_fkey" FOREIGN KEY ("contactProviderId") REFERENCES "ContactProvider"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
