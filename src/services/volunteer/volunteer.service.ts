@@ -10,8 +10,14 @@ import {
   SocialProviderDto,
   CreateVolunteerDto,
   SearchVolunteersDto,
+  VolunteerContactDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
-import { Volunteer, City, VolunteerPaymentOption } from '@prisma/client';
+import {
+  Volunteer,
+  City,
+  VolunteerPaymentOption,
+  VolunteerContact,
+} from '@prisma/client';
 
 @Injectable()
 export class VolunteerService {
@@ -23,7 +29,30 @@ export class VolunteerService {
     request: SearchVolunteersDto,
   ): Promise<VolunteerDto[] | null> {
     try {
-      const volunteers = await this.prisma.volunteer.findMany({});
+      const { cityIds, activityIds } = request;
+
+      const volunteers = await this.prisma.volunteer.findMany({
+        where: {
+          activities: {
+            some: {
+              activity: {
+                id: {
+                  in: activityIds,
+                },
+              },
+            },
+          },
+          cities: {
+            some: {
+              city: {
+                id: {
+                  in: cityIds,
+                },
+              },
+            },
+          },
+        },
+      });
 
       return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
     } catch (e) {
@@ -152,6 +181,27 @@ export class VolunteerService {
     }
   }
 
+  async getVolunteerContacts(
+    volunteerIds: string[],
+  ): Promise<VolunteerContactDto[]> {
+    try {
+      const contacts = await this.prisma.volunteerContact.findMany({
+        where: {
+          volunteer: {
+            id: {
+              in: volunteerIds,
+            },
+          },
+        },
+      });
+
+      return contacts.map((contact) => this.mapContact(contact));
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
   async getVolunteersByIds(ids: string[]): Promise<VolunteerDto[] | null> {
     try {
       const volunteers = await this.prisma.volunteer.findMany({
@@ -170,6 +220,8 @@ export class VolunteerService {
   }
 
   async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
+    const { firstname, lastname } = request;
+
     const citiesCreate = request.citiesIds.map((cityId) => ({
       city: {
         connect: {
@@ -199,11 +251,40 @@ export class VolunteerService {
       },
     }));
 
+    const contactsCreate = request.contacts.map((contact) => ({
+      metadata: contact.metadata,
+      contactProviders: {
+        create: {
+          contactProvider: {
+            connect: {
+              id: contact.contactProviderId,
+            },
+          },
+        },
+      },
+    }));
+
+    const paymentOptionsCreate = request.paymentOptions.map(
+      (paymentOption) => ({
+        metadata: paymentOption.metadata,
+        paymentProviders: {
+          create: {
+            paymentProvider: {
+              connect: {
+                id: paymentOption.paymentOptionId,
+              },
+            },
+          },
+        },
+      }),
+    );
+
     try {
       const createdVolunteer = await this.prisma.volunteer.create({
         data: {
-          name: request.name,
-          verificationState: 'requested',
+          firstname,
+          lastname,
+          verificationStatus: 'requested',
           cities: {
             create: citiesCreate,
           },
@@ -212,6 +293,12 @@ export class VolunteerService {
           },
           social: {
             create: socialProviderCreate,
+          },
+          contacts: {
+            create: contactsCreate,
+          },
+          paymentOptions: {
+            create: paymentOptionsCreate,
           },
         },
       });
@@ -230,17 +317,29 @@ export class VolunteerService {
 
     return {
       id,
+      metadata: null,
       volunteerId,
     };
   }
 
-  private mapVolunteer(volunteer: Volunteer): VolunteerDto {
-    const { id, name, verificationState } = volunteer;
+  private mapContact(contact: VolunteerContact): VolunteerContactDto {
+    const { id } = contact;
 
     return {
       id,
-      name,
-      verificationState,
+      metadata: null,
+      volunteerId: contact.volunteerId,
+    };
+  }
+
+  private mapVolunteer(volunteer: Volunteer): VolunteerDto {
+    const { id, firstname, lastname, verificationStatus } = volunteer;
+
+    return {
+      id,
+      firstname,
+      lastname,
+      verificationStatus,
     };
   }
 }

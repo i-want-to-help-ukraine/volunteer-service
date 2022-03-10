@@ -77,7 +77,7 @@ model PaymentProvidersOnVolunteerPaymentOptions {
 model VolunteerContact {
     id                      String                                  @default(cuid()) @id
     metadata                Json
-    contactProviders        VolunteerContactsOnContactProviders[]
+    providers               VolunteerContactsOnContactProviders[]
     volunteer               Volunteer                               @relation(fields: [volunteerId], references: [id])
     volunteerId             String
 }

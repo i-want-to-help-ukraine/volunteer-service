@@ -17,6 +17,7 @@ import {
   UpdatePaymentOptionDto,
   DeletePaymentOptionDto,
   VolunteerIdsRequestDto,
+  ContactsResponseDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 
 @Controller('volunteer')
@@ -116,6 +117,19 @@ export class VolunteerController {
 
     return {
       paymentOptions,
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'getVolunteerContacts')
+  async getVolunteerContacts(
+    request: VolunteerIdsRequestDto,
+  ): Promise<ContactsResponseDto> {
+    const contacts = await this.volunteerService.getVolunteerContacts(
+      request.volunteerIds,
+    );
+
+    return {
+      contacts,
     };
   }
 
