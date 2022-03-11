@@ -4,6 +4,8 @@ CREATE TABLE "Volunteer" (
     "firstname" TEXT NOT NULL,
     "lastname" TEXT NOT NULL,
     "verificationStatus" TEXT NOT NULL,
+    "cityIds" TEXT[],
+    "activityIds" TEXT[],
 
     CONSTRAINT "Volunteer_pkey" PRIMARY KEY ("id")
 );
