@@ -12,7 +12,6 @@ import {
   SearchVolunteersDto,
   VolunteerContactDto,
   ContactProviderDto,
-  ContactsResponseDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import {
   Volunteer,
@@ -270,8 +269,23 @@ export class VolunteerService {
     }
   }
 
+  async getVolunteerByAuthId(authId: string): Promise<VolunteerDto | null> {
+    try {
+      // TODO: make unique constraint
+      const profile = await this.prisma.volunteer.findFirst({
+        where: { authId },
+      });
+
+      return this.mapVolunteer(profile);
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
   async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
     const {
+      authId,
       firstName,
       lastName,
       activityIds,
@@ -279,13 +293,18 @@ export class VolunteerService {
       cityIds,
       contacts,
       paymentOptions,
+      description,
+      organization,
     } = request;
 
     try {
       const createdVolunteer = await this.prisma.volunteer.create({
         data: {
+          authId,
           firstname: firstName,
           lastname: lastName,
+          description,
+          organization,
           cityIds,
           activityIds,
           verificationStatus: 'requested',
@@ -402,8 +421,11 @@ export class VolunteerService {
   private mapVolunteer(volunteer: Volunteer): VolunteerDto {
     const {
       id,
+      authId,
       firstname,
       lastname,
+      description,
+      organization,
       verificationStatus,
       cityIds,
       activityIds,
@@ -411,8 +433,11 @@ export class VolunteerService {
 
     return {
       id,
+      authId,
       firstName: firstname,
       lastName: lastname,
+      description,
+      organization,
       verificationStatus,
       cityIds,
       activityIds,

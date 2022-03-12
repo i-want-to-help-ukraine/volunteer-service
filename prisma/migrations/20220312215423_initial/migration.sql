@@ -1,9 +1,12 @@
 -- CreateTable
 CREATE TABLE "Volunteer" (
     "id" TEXT NOT NULL,
+    "authId" TEXT NOT NULL,
     "firstname" TEXT NOT NULL,
     "lastname" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
     "verificationStatus" TEXT NOT NULL,
+    "organization" TEXT NOT NULL,
     "cityIds" TEXT[],
     "activityIds" TEXT[],
 
@@ -119,6 +122,9 @@ CREATE TABLE "Activity" (
 
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Volunteer_authId_unique_constraint" ON "Volunteer"("authId");
 
 -- AddForeignKey
 ALTER TABLE "CitiesOnVolunteers" ADD CONSTRAINT "CitiesOnVolunteers_volunteerId_fkey" FOREIGN KEY ("volunteerId") REFERENCES "Volunteer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

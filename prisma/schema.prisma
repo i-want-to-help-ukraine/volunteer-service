@@ -12,9 +12,12 @@ datasource db {
 
 model Volunteer {
     id                      String                      @default(cuid()) @id
+    authId                  String                      @unique(map: "Volunteer_authId_unique_constraint")
     firstname               String
     lastname                String
+    description             String
     verificationStatus      String
+    organization            String
     cityIds                 String[]
     activityIds             String[]
     cities                  CitiesOnVolunteers[]
