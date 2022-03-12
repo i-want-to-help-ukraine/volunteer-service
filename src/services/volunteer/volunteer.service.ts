@@ -11,11 +11,14 @@ import {
   CreateVolunteerDto,
   SearchVolunteersDto,
   VolunteerContactDto,
+  ContactProviderDto,
+  ContactsResponseDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import {
   Volunteer,
   VolunteerPaymentOption,
   VolunteerContact,
+  VolunteerSocial,
 } from '@prisma/client';
 
 @Injectable()
@@ -161,11 +164,35 @@ export class VolunteerService {
     }
   }
 
+  async getContactProviders(): Promise<ContactProviderDto[]> {
+    try {
+      return this.prisma.contactProvider.findMany({});
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
+  async getContactProvidersByIds(ids: string[]): Promise<ContactProviderDto[]> {
+    try {
+      return this.prisma.contactProvider.findMany({
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
   async getVolunteerSocial(
     volunteerIds: string[],
   ): Promise<VolunteerSocialDto[]> {
     try {
-      return this.prisma.volunteerSocial.findMany({
+      const volunteerSocial = await this.prisma.volunteerSocial.findMany({
         where: {
           volunteer: {
             id: {
@@ -174,6 +201,8 @@ export class VolunteerService {
           },
         },
       });
+
+      return volunteerSocial.map((social) => this.mapVolunteerSocial(social));
     } catch (e) {
       this.logger.error(e);
       return null;
@@ -243,8 +272,8 @@ export class VolunteerService {
 
   async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
     const {
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       activityIds,
       social,
       cityIds,
@@ -255,8 +284,8 @@ export class VolunteerService {
     try {
       const createdVolunteer = await this.prisma.volunteer.create({
         data: {
-          firstname,
-          lastname,
+          firstname: firstName,
+          lastname: lastName,
           cityIds,
           activityIds,
           verificationStatus: 'requested',
@@ -281,6 +310,7 @@ export class VolunteerService {
           social: {
             create: social.map((volunteerSocial) => ({
               url: volunteerSocial.url,
+              providerIds: [volunteerSocial.socialProviderId],
               providers: {
                 create: {
                   socialProvider: {
@@ -294,8 +324,9 @@ export class VolunteerService {
           },
           contacts: {
             create: contacts.map((contact) => ({
-              metadata: contact.metadata,
-              contactProviders: {
+              metadata: JSON.parse(contact.metadata),
+              providerIds: [contact.contactProviderId],
+              providers: {
                 create: {
                   contactProvider: {
                     connect: {
@@ -308,7 +339,8 @@ export class VolunteerService {
           },
           paymentOptions: {
             create: paymentOptions.map((paymentOption) => ({
-              metadata: paymentOption.metadata,
+              metadata: JSON.parse(paymentOption.metadata),
+              providerIds: [paymentOption.paymentOptionId],
               paymentProviders: {
                 create: {
                   paymentProvider: {
@@ -330,25 +362,40 @@ export class VolunteerService {
     }
   }
 
-  private mapVolunteerPaymentOption(
-    volunteerPaymentOption: VolunteerPaymentOption,
-  ): VolunteerPaymentOptionDto {
-    const { id, volunteerId } = volunteerPaymentOption;
+  private mapVolunteerSocial(
+    volunteerSocial: VolunteerSocial,
+  ): VolunteerSocialDto {
+    const { id, url, volunteerId, providerIds } = volunteerSocial;
 
     return {
       id,
-      metadata: null,
+      url,
       volunteerId,
+      providerId: providerIds[0],
+    };
+  }
+
+  private mapVolunteerPaymentOption(
+    volunteerPaymentOption: VolunteerPaymentOption,
+  ): VolunteerPaymentOptionDto {
+    const { id, metadata, volunteerId, providerIds } = volunteerPaymentOption;
+
+    return {
+      id,
+      metadata: JSON.stringify(metadata),
+      volunteerId,
+      providerId: providerIds[0],
     };
   }
 
   private mapContact(contact: VolunteerContact): VolunteerContactDto {
-    const { id } = contact;
+    const { id, metadata, volunteerId, providerIds } = contact;
 
     return {
       id,
-      metadata: null,
-      volunteerId: contact.volunteerId,
+      metadata: JSON.stringify(metadata),
+      volunteerId: volunteerId,
+      providerId: providerIds[0],
     };
   }
 
@@ -364,8 +411,8 @@ export class VolunteerService {
 
     return {
       id,
-      firstname,
-      lastname,
+      firstName: firstname,
+      lastName: lastname,
       verificationStatus,
       cityIds,
       activityIds,

@@ -7,6 +7,7 @@ import {
   VolunteersResponseDto,
   GetByIdsDto,
   CitiesDto,
+  ContactProvidersDto,
   ActivitiesDto,
   SocialProvidersDto,
   PaymentProvidersDto,
@@ -102,6 +103,26 @@ export class VolunteerController {
 
     return {
       paymentProvider,
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'getContactProviders')
+  async getContactProviders(
+    request: GetByIdsDto,
+  ): Promise<ContactProvidersDto> {
+    if (request.ids.length > 0) {
+      const contactProviders =
+        await this.volunteerService.getContactProvidersByIds(request.ids);
+
+      return {
+        contactProviders,
+      };
+    }
+
+    const contactProviders = await this.volunteerService.getContactProviders();
+
+    return {
+      contactProviders,
     };
   }
 
