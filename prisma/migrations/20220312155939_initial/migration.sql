@@ -30,6 +30,7 @@ CREATE TABLE "ActivitiesOnVolunteers" (
 CREATE TABLE "VolunteerSocial" (
     "id" TEXT NOT NULL,
     "url" TEXT NOT NULL,
+    "providerIds" TEXT[],
     "volunteerId" TEXT NOT NULL,
 
     CONSTRAINT "VolunteerSocial_pkey" PRIMARY KEY ("id")
@@ -47,6 +48,7 @@ CREATE TABLE "SocialProvidersOnVolunteerSocial" (
 CREATE TABLE "VolunteerPaymentOption" (
     "id" TEXT NOT NULL,
     "metadata" JSONB NOT NULL,
+    "providerIds" TEXT[],
     "volunteerId" TEXT NOT NULL,
 
     CONSTRAINT "VolunteerPaymentOption_pkey" PRIMARY KEY ("id")
@@ -64,6 +66,7 @@ CREATE TABLE "PaymentProvidersOnVolunteerPaymentOptions" (
 CREATE TABLE "VolunteerContact" (
     "id" TEXT NOT NULL,
     "metadata" JSONB NOT NULL,
+    "providerIds" TEXT[],
     "volunteerId" TEXT NOT NULL,
 
     CONSTRAINT "VolunteerContact_pkey" PRIMARY KEY ("id")

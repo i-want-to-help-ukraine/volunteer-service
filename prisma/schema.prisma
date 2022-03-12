@@ -45,6 +45,7 @@ model ActivitiesOnVolunteers {
 model VolunteerSocial {
     id                      String                              @default(cuid()) @id
     url                     String
+    providerIds             String[]
     providers               SocialProvidersOnVolunteerSocial[]
     volunteer               Volunteer                           @relation(fields: [volunteerId], references: [id])
     volunteerId             String
@@ -62,6 +63,7 @@ model SocialProvidersOnVolunteerSocial {
 model VolunteerPaymentOption {
     id                        String                          @default(cuid()) @id
     metadata                  Json
+    providerIds               String[]
     paymentProviders          PaymentProvidersOnVolunteerPaymentOptions[]
     volunteer                 Volunteer                       @relation(fields: [volunteerId], references: [id])
     volunteerId               String
@@ -79,6 +81,7 @@ model PaymentProvidersOnVolunteerPaymentOptions {
 model VolunteerContact {
     id                      String                                  @default(cuid()) @id
     metadata                Json
+    providerIds             String[]
     providers               VolunteerContactsOnContactProviders[]
     volunteer               Volunteer                               @relation(fields: [volunteerId], references: [id])
     volunteerId             String
