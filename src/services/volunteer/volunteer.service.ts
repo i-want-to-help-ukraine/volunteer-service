@@ -8,7 +8,9 @@ import {
   VolunteerPaymentOptionDto,
   VolunteerSocialDto,
   SocialProviderDto,
-  CreateVolunteerDto,
+  CreateProfileDto,
+  UpdateProfileDto,
+  HideProfileDto,
   SearchVolunteersDto,
   VolunteerContactDto,
   ContactProviderDto,
@@ -271,7 +273,6 @@ export class VolunteerService {
 
   async getVolunteerByAuthId(authId: string): Promise<VolunteerDto | null> {
     try {
-      // TODO: make unique constraint
       const profile = await this.prisma.volunteer.findFirst({
         where: { authId },
       });
@@ -283,7 +284,9 @@ export class VolunteerService {
     }
   }
 
-  async createVolunteer(request: CreateVolunteerDto): Promise<VolunteerDto> {
+  async createVolunteerProfile(
+    request: CreateProfileDto,
+  ): Promise<VolunteerDto> {
     const {
       authId,
       firstName,
@@ -359,12 +362,12 @@ export class VolunteerService {
           paymentOptions: {
             create: paymentOptions.map((paymentOption) => ({
               metadata: JSON.parse(paymentOption.metadata),
-              providerIds: [paymentOption.paymentOptionId],
+              providerIds: [paymentOption.paymentProviderId],
               paymentProviders: {
                 create: {
                   paymentProvider: {
                     connect: {
-                      id: paymentOption.paymentOptionId,
+                      id: paymentOption.paymentProviderId,
                     },
                   },
                 },
@@ -375,6 +378,126 @@ export class VolunteerService {
       });
 
       return this.mapVolunteer(createdVolunteer);
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
+  async updateVolunteerProfile(
+    request: UpdateProfileDto,
+  ): Promise<VolunteerDto> {
+    try {
+      const {
+        id,
+        firstName,
+        lastName,
+        description,
+        organization,
+        activityIds,
+        cityIds,
+        social,
+        paymentOptions,
+        contacts,
+      } = request;
+
+      const volunteerProfile = (await this.getVolunteersByIds([id]))[0];
+      const activitiesToCreate = activityIds.filter(
+        (activityId) => !volunteerProfile.activityIds.includes(activityId),
+      );
+      const activitiesToDelete = volunteerProfile.activityIds.filter(
+        (activityId) => !activityIds.includes(activityId),
+      );
+
+      const citiesToCreate = cityIds.filter(
+        (cityId) => !volunteerProfile.cityIds.includes(cityId),
+      );
+      const citiesToDelete = volunteerProfile.cityIds.filter(
+        (cityId) => !cityIds.includes(cityId),
+      );
+
+      const updatedProfile = await this.prisma.volunteer.update({
+        where: {
+          id,
+        },
+        data: {
+          firstname: firstName,
+          lastname: lastName,
+          description,
+          organization,
+          activityIds: activityIds.length > 0 ? activityIds : undefined,
+          cityIds: cityIds.length > 0 ? cityIds : undefined,
+          activities: {
+            create: activitiesToCreate.map((activityId) => ({
+              activity: {
+                connect: {
+                  id: activityId,
+                },
+              },
+            })),
+            delete: activitiesToDelete.map((activityId) => ({
+              volunteerId_activityId: { activityId, volunteerId: id },
+            })),
+          },
+          cities: {
+            create: citiesToCreate.map((cityId) => ({
+              city: {
+                connect: {
+                  id: cityId,
+                },
+              },
+            })),
+            delete: citiesToDelete.map((cityId) => ({
+              volunteerId_cityId: { cityId, volunteerId: id },
+            })),
+          },
+          social: {
+            create: social.create.map(({ url, socialProviderId }) => ({
+              url,
+              providerIds: [socialProviderId],
+            })),
+            delete: social.delete.map((id) => ({ id })),
+          },
+          paymentOptions: {
+            create: paymentOptions.create.map(
+              ({ metadata, paymentProviderId }) => ({
+                metadata,
+                providerIds: [paymentProviderId],
+              }),
+            ),
+            delete: paymentOptions.delete.map((id) => ({ id })),
+          },
+          contacts: {
+            create: contacts.create.map(({ metadata, contactProviderId }) => ({
+              metadata,
+              providerIds: [contactProviderId],
+            })),
+            delete: contacts.delete.map((id) => ({ id })),
+          },
+        },
+      });
+
+      return this.mapVolunteer(updatedProfile);
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
+  async hideVolunteerProfile(request: HideProfileDto): Promise<VolunteerDto> {
+    try {
+      const { id } = request;
+
+      const profile = await this.prisma.volunteer.update({
+        where: {
+          id,
+        },
+        data: {
+          verificationStatus: 'hidden',
+        },
+      });
+
+      return this.mapVolunteer(profile);
     } catch (e) {
       this.logger.error(e);
       return null;

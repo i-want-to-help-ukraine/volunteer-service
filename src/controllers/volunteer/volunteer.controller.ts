@@ -2,7 +2,6 @@ import { Controller } from '@nestjs/common';
 import { VolunteerService } from '../../services/volunteer/volunteer.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
-  CreateVolunteerDto,
   SearchVolunteersDto,
   VolunteersResponseDto,
   GetByIdsDto,
@@ -13,14 +12,14 @@ import {
   PaymentProvidersDto,
   VolunteerSocialResponseDto,
   VolunteerPaymentOptionResponseDto,
-  CreatePaymentOptionDto,
   VolunteerResponseDto,
-  UpdatePaymentOptionDto,
-  DeletePaymentOptionDto,
   VolunteerIdsRequestDto,
   ContactsResponseDto,
   GetByAuthId,
   VolunteerAuthProfileDto,
+  CreateProfileDto,
+  UpdateProfileDto,
+  HideProfileDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 
 @Controller('volunteer')
@@ -194,36 +193,35 @@ export class VolunteerController {
     };
   }
 
-  @GrpcMethod('VolunteerServiceRPC', 'addPaymentOption')
-  async addPaymentOption(
-    request: CreatePaymentOptionDto,
+  @GrpcMethod('VolunteerServiceRPC', 'createProfile')
+  async createProfile(
+    request: CreateProfileDto,
   ): Promise<VolunteerResponseDto> {
+    const volunteer = await this.volunteerService.createVolunteerProfile(
+      request,
+    );
+
     return {
-      volunteer: null,
+      volunteer,
     };
   }
 
-  @GrpcMethod('VolunteerServiceRPC', 'updatePaymentOption')
-  async updatePaymentOption(
-    request: UpdatePaymentOptionDto,
+  @GrpcMethod('VolunteerServiceRPC', 'updateProfile')
+  async updateProfile(
+    request: UpdateProfileDto,
   ): Promise<VolunteerResponseDto> {
+    const volunteer = await this.volunteerService.updateVolunteerProfile(
+      request,
+    );
+
     return {
-      volunteer: null,
+      volunteer,
     };
   }
 
-  @GrpcMethod('VolunteerServiceRPC', 'deletePaymentOption')
-  async deletePaymentOption(
-    request: DeletePaymentOptionDto,
-  ): Promise<VolunteerResponseDto> {
-    return {};
-  }
-
-  @GrpcMethod('VolunteerServiceRPC', 'createVolunteer')
-  async createVolunteer(
-    request: CreateVolunteerDto,
-  ): Promise<VolunteerResponseDto> {
-    const volunteer = await this.volunteerService.createVolunteer(request);
+  @GrpcMethod('VolunteerServiceRPC', 'hideProfile')
+  async hideProfile(request: HideProfileDto): Promise<VolunteerResponseDto> {
+    const volunteer = await this.volunteerService.hideVolunteerProfile(request);
 
     return {
       volunteer,
