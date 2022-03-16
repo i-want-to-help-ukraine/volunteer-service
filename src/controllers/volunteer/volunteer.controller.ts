@@ -28,6 +28,7 @@ export class VolunteerController {
 
   @GrpcMethod('VolunteerServiceRPC', 'search')
   async search(request: SearchVolunteersDto): Promise<VolunteersResponseDto> {
+    console.log(request);
     const volunteers = await this.volunteerService.searchVolunteers(request);
 
     return { volunteers };

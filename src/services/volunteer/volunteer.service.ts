@@ -41,24 +41,30 @@ export class VolunteerService {
 
       const volunteers = await this.prisma.volunteer.findMany({
         where: {
-          activities: {
-            some: {
-              activity: {
-                id: {
-                  in: activityIds,
-                },
-              },
-            },
-          },
-          cities: {
-            some: {
-              city: {
-                id: {
-                  in: cityIds,
-                },
-              },
-            },
-          },
+          activities:
+            activityIds.length > 0
+              ? {
+                  some: {
+                    activity: {
+                      id: {
+                        in: activityIds,
+                      },
+                    },
+                  },
+                }
+              : undefined,
+          cities:
+            cityIds.length > 0
+              ? {
+                  some: {
+                    city: {
+                      id: {
+                        in: cityIds,
+                      },
+                    },
+                  },
+                }
+              : undefined,
         },
       });
 
