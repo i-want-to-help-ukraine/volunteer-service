@@ -5,7 +5,7 @@ async function main() {
   const cities = ['Kyiv', 'Kharkov'];
   const activities = ['Food', 'Medicine'];
   const paymentProviders = ['send.monobank.ua'];
-  const socialProviders = ['ig', 'fb'];
+  const socialProviders = ['instagram', 'facebook'];
   const contactProviders = ['phone', 'email'];
 
   const citiesCreate = prisma.city.createMany({
