@@ -25,6 +25,7 @@ model Volunteer {
     social                  VolunteerSocial[]
     paymentOptions          VolunteerPaymentOption[]
     contacts                VolunteerContact[]
+    createdAt               DateTime @default(now())
 }
 
 model CitiesOnVolunteers {

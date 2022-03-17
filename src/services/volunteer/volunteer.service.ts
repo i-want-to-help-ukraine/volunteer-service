@@ -28,18 +28,44 @@ export class VolunteerService {
 
   constructor(private prisma: PrismaService) {}
 
-  async searchVolunteers(
-    request: SearchVolunteersDto,
-  ): Promise<VolunteerDto[] | null> {
+  async searchVolunteers(request: SearchVolunteersDto): Promise<{
+    hasNextPage: boolean;
+    volunteers: VolunteerDto[];
+  }> {
     try {
-      const { cityIds, activityIds } = request;
+      const { cityIds, activityIds, offset, startCursor } = request;
 
       if (cityIds.length === 0 && activityIds.length === 0) {
-        const volunteers = await this.prisma.volunteer.findMany({});
-        return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
+        const volunteers = await this.prisma.volunteer.findMany({
+          orderBy: {
+            createdAt: 'asc',
+          },
+          take: offset + 1,
+          cursor: startCursor
+            ? {
+                id: startCursor,
+              }
+            : undefined,
+        });
+
+        return {
+          hasNextPage: volunteers.length === offset + 1,
+          volunteers: volunteers.map((volunteer) =>
+            this.mapVolunteer(volunteer),
+          ),
+        };
       }
 
       const volunteers = await this.prisma.volunteer.findMany({
+        orderBy: {
+          createdAt: 'asc',
+        },
+        take: offset + 1,
+        cursor: startCursor
+          ? {
+              id: startCursor,
+            }
+          : undefined,
         where: {
           activities:
             activityIds.length > 0
@@ -68,7 +94,19 @@ export class VolunteerService {
         },
       });
 
-      return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
+      return {
+        hasNextPage: volunteers.length === offset + 1,
+        volunteers: volunteers.map((volunteer) => this.mapVolunteer(volunteer)),
+      };
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
+  getVolunteersCount(): Promise<number> {
+    try {
+      return this.prisma.volunteer.count();
     } catch (e) {
       this.logger.error(e);
       return null;

@@ -9,6 +9,7 @@ CREATE TABLE "Volunteer" (
     "organization" TEXT NOT NULL,
     "cityIds" TEXT[],
     "activityIds" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Volunteer_pkey" PRIMARY KEY ("id")
 );
