@@ -20,6 +20,7 @@ import {
   CreateProfileDto,
   UpdateProfileDto,
   HideProfileDto,
+  SearchVolunteerResponse,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 
 @Controller('volunteer')
@@ -27,11 +28,23 @@ export class VolunteerController {
   constructor(private volunteerService: VolunteerService) {}
 
   @GrpcMethod('VolunteerServiceRPC', 'search')
-  async search(request: SearchVolunteersDto): Promise<VolunteersResponseDto> {
-    console.log(request);
-    const volunteers = await this.volunteerService.searchVolunteers(request);
+  async search(request: SearchVolunteersDto): Promise<SearchVolunteerResponse> {
+    const { startCursor } = request;
+    const volunteersResult = await this.volunteerService.searchVolunteers(
+      request,
+    );
+    const totalCount = await this.volunteerService.getVolunteersCount();
+    const { hasNextPage, volunteers } = volunteersResult;
+    const endCursor =
+      volunteers.length > 0 ? volunteers[volunteers.length - 1].id : null;
 
-    return { volunteers };
+    return {
+      totalCount,
+      volunteers,
+      startCursor,
+      endCursor,
+      hasNextPage,
+    };
   }
 
   @GrpcMethod('VolunteerServiceRPC', 'getCities')
