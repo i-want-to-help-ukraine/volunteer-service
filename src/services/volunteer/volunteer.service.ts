@@ -391,11 +391,12 @@ export class VolunteerService {
   }
 
   async updateVolunteerProfile(
+    authId: string,
     request: UpdateProfileDto,
   ): Promise<VolunteerDto> {
     try {
       const {
-        id,
+        authId,
         firstName,
         lastName,
         description,
@@ -407,7 +408,7 @@ export class VolunteerService {
         contacts,
       } = request;
 
-      const volunteerProfile = (await this.getVolunteersByIds([id]))[0];
+      const volunteerProfile = await this.getVolunteerByAuthId(authId);
       const activitiesToCreate = activityIds.filter(
         (activityId) => !volunteerProfile.activityIds.includes(activityId),
       );
@@ -424,7 +425,7 @@ export class VolunteerService {
 
       const updatedProfile = await this.prisma.volunteer.update({
         where: {
-          id,
+          id: volunteerProfile.id,
         },
         data: {
           firstname: firstName,
@@ -442,7 +443,10 @@ export class VolunteerService {
               },
             })),
             delete: activitiesToDelete.map((activityId) => ({
-              volunteerId_activityId: { activityId, volunteerId: id },
+              volunteerId_activityId: {
+                activityId,
+                volunteerId: volunteerProfile.id,
+              },
             })),
           },
           cities: {
@@ -454,7 +458,7 @@ export class VolunteerService {
               },
             })),
             delete: citiesToDelete.map((cityId) => ({
-              volunteerId_cityId: { cityId, volunteerId: id },
+              volunteerId_cityId: { cityId, volunteerId: volunteerProfile.id },
             })),
           },
           social: {

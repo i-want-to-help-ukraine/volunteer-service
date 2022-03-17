@@ -212,6 +212,7 @@ export class VolunteerController {
     request: UpdateProfileDto,
   ): Promise<VolunteerResponseDto> {
     const volunteer = await this.volunteerService.updateVolunteerProfile(
+      request.authId,
       request,
     );
 
