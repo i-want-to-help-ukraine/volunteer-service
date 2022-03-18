@@ -18,6 +18,7 @@ model Volunteer {
     description             String
     verificationStatus      String
     organization            String
+    avatarUrl               String
     cityIds                 String[]
     activityIds             String[]
     cities                  CitiesOnVolunteers[]
