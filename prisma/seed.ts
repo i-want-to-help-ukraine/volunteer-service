@@ -54,6 +54,7 @@ const getVolunteerData = ({
   firstname: getUniqueName(1),
   lastname: getUniqueName(1),
   description: '',
+  avatarUrl: 'https://via.placeholder.com/300.png/09f/fff',
   organization: getUniqueName(1),
   cityIds: [cityIds[0]],
   activityIds: [activityIds[0]],

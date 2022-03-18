@@ -7,6 +7,7 @@ CREATE TABLE "Volunteer" (
     "description" TEXT NOT NULL,
     "verificationStatus" TEXT NOT NULL,
     "organization" TEXT NOT NULL,
+    "avatarUrl" TEXT NOT NULL,
     "cityIds" TEXT[],
     "activityIds" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
