@@ -439,6 +439,7 @@ export class VolunteerService {
         authId,
         firstName,
         lastName,
+        avatarUrl,
         description,
         organization,
         activityIds,
@@ -472,6 +473,7 @@ export class VolunteerService {
           lastname: lastName,
           description,
           organization,
+          avatarUrl,
           activityIds: activityIds.length > 0 ? activityIds : undefined,
           cityIds: cityIds.length > 0 ? cityIds : undefined,
           activities: {
@@ -511,7 +513,7 @@ export class VolunteerService {
           paymentOptions: {
             create: paymentOptions.create.map(
               ({ metadata, paymentProviderId }) => ({
-                metadata,
+                metadata: JSON.parse(metadata),
                 providerIds: [paymentProviderId],
               }),
             ),
@@ -519,7 +521,7 @@ export class VolunteerService {
           },
           contacts: {
             create: contacts.create.map(({ metadata, contactProviderId }) => ({
-              metadata,
+              metadata: JSON.parse(metadata),
               providerIds: [contactProviderId],
             })),
             delete: contacts.delete.map((id) => ({ id })),

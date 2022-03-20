@@ -169,6 +169,10 @@ async function main() {
       title: 'I am a driver and I need fuel',
       description: 'Volunteers are delivering across the city',
     },
+    {
+      title: 'I am a driver and I need fuel',
+      description: 'Volunteers are delivering across the city',
+    },
   ];
   const paymentProviders = [
     'send.monobank.ua',
