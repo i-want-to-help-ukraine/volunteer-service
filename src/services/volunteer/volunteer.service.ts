@@ -67,6 +67,7 @@ export class VolunteerService {
             }
           : undefined,
         where: {
+          verificationStatus: 'verified',
           activities:
             activityIds.length > 0
               ? {
@@ -436,7 +437,6 @@ export class VolunteerService {
   ): Promise<VolunteerDto> {
     try {
       const {
-        authId,
         firstName,
         lastName,
         avatarUrl,
@@ -450,19 +450,34 @@ export class VolunteerService {
       } = request;
 
       const volunteerProfile = await this.getVolunteerByAuthId(authId);
-      const activitiesToCreate = activityIds.filter(
-        (activityId) => !volunteerProfile.activityIds.includes(activityId),
-      );
-      const activitiesToDelete = volunteerProfile.activityIds.filter(
-        (activityId) => !activityIds.includes(activityId),
-      );
 
-      const citiesToCreate = cityIds.filter(
-        (cityId) => !volunteerProfile.cityIds.includes(cityId),
-      );
-      const citiesToDelete = volunteerProfile.cityIds.filter(
-        (cityId) => !cityIds.includes(cityId),
-      );
+      const activitiesToCreate =
+        activityIds.length > 0
+          ? activityIds.filter(
+              (activityId) =>
+                !volunteerProfile.activityIds.includes(activityId),
+            )
+          : [];
+      const activitiesToDelete =
+        activityIds.length > 0
+          ? volunteerProfile.activityIds.filter(
+              (volunteerActivityId) =>
+                !activityIds.includes(volunteerActivityId),
+            )
+          : [];
+
+      const citiesToCreate =
+        cityIds.length > 0
+          ? cityIds.filter(
+              (cityId) => !volunteerProfile.cityIds.includes(cityId),
+            )
+          : [];
+      const citiesToDelete =
+        cityIds.length > 0
+          ? volunteerProfile.cityIds.filter(
+              (cityId) => !cityIds.includes(cityId),
+            )
+          : [];
 
       const updatedProfile = await this.prisma.volunteer.update({
         where: {
