@@ -131,21 +131,43 @@ async function main() {
   const activities = [
     {
       title: 'Help military',
-      description: 'Volunteers are supplying military forces',
+      description: 'Volunteers are supplying equipment to military forces',
     },
     {
-      title: 'Help city territory defence',
+      title: 'Help territory defence',
       description:
         'Territory defence are non military people who are fighting with sabotage groups in the city',
     },
     {
-      title: 'Help families',
+      title: 'Help medical workers',
       description:
-        'Many people left without home. Volunteers are helping them.',
+        'Volunteers are supplying medical workers with medical equipment',
     },
     {
-      title: 'Help medical workers',
-      description: 'Volunteers supplying materials to medical workers',
+      title: 'Help pets and animals',
+      description: 'Volunteers are helping animals',
+    },
+    {
+      title: 'Help evacuated people',
+      description: 'Evacuated people are in need of food, medicine, clothes',
+    },
+    {
+      title: 'Help people in danger zone',
+      description:
+        'People in danger zone need help with food, medicine and evacuation',
+    },
+    {
+      title: 'I am making food',
+      description:
+        'Volunteers are making food and supplying it to people in need',
+    },
+    {
+      title: 'I am helping with medicine',
+      description: 'Volunteers are supplying medicine',
+    },
+    {
+      title: 'I am a driver and I need fuel',
+      description: 'Volunteers are delivering across the city',
     },
   ];
   const paymentProviders = [
