@@ -122,11 +122,13 @@ model ContactProvider {
 model City {
     id                      String    @default(cuid()) @id
     title                   String
+    adminName               String
     volunteers              CitiesOnVolunteers[]
 }
 
 model Activity {
     id                      String    @default(cuid()) @id
     title                   String
+    description             String
     volunteers              ActivitiesOnVolunteers[]
 }

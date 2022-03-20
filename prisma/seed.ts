@@ -6,6 +6,7 @@ import {
   CreateVolunteerPaymentOptionDto,
   CreateVolunteerSocialDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
+import * as cities from './cities.json';
 
 function getUniqueName(length = 2) {
   return uniqueNamesGenerator({
@@ -127,18 +128,44 @@ const getVolunteerData = ({
 });
 
 async function main() {
-  const cities = ['Kyiv', 'Kharkov'];
-  const activities = ['Food', 'Medicine'];
-  const paymentProviders = ['send.monobank.ua'];
+  const activities = [
+    {
+      title: 'Help military',
+      description: 'Volunteers are supplying military forces',
+    },
+    {
+      title: 'Help city territory defence',
+      description:
+        'Territory defence are non military people who are fighting with sabotage groups in the city',
+    },
+    {
+      title: 'Help families',
+      description:
+        'Many people left without home. Volunteers are helping them.',
+    },
+    {
+      title: 'Help medical workers',
+      description: 'Volunteers supplying materials to medical workers',
+    },
+  ];
+  const paymentProviders = [
+    'send.monobank.ua',
+    'Bank card',
+    'Crypto',
+    'PayPal',
+  ];
   const socialProviders = ['instagram', 'facebook'];
   const contactProviders = ['phone', 'email'];
 
   const citiesCreate = prisma.city.createMany({
-    data: cities.map((city) => ({ title: city })),
+    data: cities.map(({ city, admin_name }) => ({
+      title: city,
+      adminName: admin_name,
+    })),
   });
 
   const activitiesCreate = prisma.activity.createMany({
-    data: activities.map((activity) => ({ title: activity })),
+    data: activities.map(({ title, description }) => ({ title, description })),
   });
 
   const paymentProvidersCreate = prisma.paymentProvider.createMany({
