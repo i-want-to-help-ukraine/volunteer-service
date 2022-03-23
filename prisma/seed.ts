@@ -50,7 +50,7 @@ const getVolunteerData = ({
   socialProviderIds,
   contactProviderIds,
   paymentProviderIds,
-}) => ({
+}: any) => ({
   authId: getUniqueName(1),
   firstname: getUniqueName(1),
   lastname: getUniqueName(1),

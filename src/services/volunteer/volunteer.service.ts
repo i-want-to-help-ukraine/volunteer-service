@@ -10,7 +10,6 @@ import {
   SocialProviderDto,
   CreateProfileDto,
   UpdateProfileDto,
-  HideProfileDto,
   SearchVolunteersDto,
   VolunteerContactDto,
   ContactProviderDto,
@@ -21,6 +20,7 @@ import {
   VolunteerContact,
   VolunteerSocial,
 } from '@prisma/client';
+import { VerificationStatus } from '../../enums/verification-status';
 
 @Injectable()
 export class VolunteerService {
@@ -67,7 +67,7 @@ export class VolunteerService {
             }
           : undefined,
         where: {
-          verificationStatus: 'verified',
+          verificationStatus: VerificationStatus.verified.toString(),
           activities:
             activityIds.length > 0
               ? {
@@ -101,16 +101,20 @@ export class VolunteerService {
       };
     } catch (e) {
       this.logger.error(e);
-      return null;
+
+      return {
+        hasNextPage: false,
+        volunteers: [],
+      };
     }
   }
 
-  getVolunteersCount(): Promise<number> {
+  getVolunteersCount(): Promise<number | null> {
     try {
       return this.prisma.volunteer.count();
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return Promise.resolve(null);
     }
   }
 
@@ -119,7 +123,7 @@ export class VolunteerService {
       return this.prisma.city.findMany({});
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -134,7 +138,7 @@ export class VolunteerService {
       });
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -143,7 +147,7 @@ export class VolunteerService {
       return this.prisma.activity.findMany({});
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -158,7 +162,7 @@ export class VolunteerService {
       });
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -167,7 +171,7 @@ export class VolunteerService {
       return this.prisma.socialProvider.findMany({});
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -182,7 +186,7 @@ export class VolunteerService {
       });
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -191,7 +195,7 @@ export class VolunteerService {
       return this.prisma.paymentProvider.findMany({});
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -206,7 +210,7 @@ export class VolunteerService {
       });
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -215,7 +219,7 @@ export class VolunteerService {
       return this.prisma.contactProvider.findMany({});
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -230,7 +234,7 @@ export class VolunteerService {
       });
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -240,6 +244,7 @@ export class VolunteerService {
     try {
       const volunteerSocial = await this.prisma.volunteerSocial.findMany({
         where: {
+          deletedAt: null,
           volunteer: {
             id: {
               in: volunteerIds,
@@ -251,7 +256,7 @@ export class VolunteerService {
       return volunteerSocial.map((social) => this.mapVolunteerSocial(social));
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -261,6 +266,7 @@ export class VolunteerService {
     try {
       const paymentOptions = await this.prisma.volunteerPaymentOption.findMany({
         where: {
+          deletedAt: null,
           volunteer: {
             id: {
               in: volunteerIds,
@@ -274,7 +280,7 @@ export class VolunteerService {
       );
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
@@ -284,6 +290,7 @@ export class VolunteerService {
     try {
       const contacts = await this.prisma.volunteerContact.findMany({
         where: {
+          deletedAt: null,
           volunteer: {
             id: {
               in: volunteerIds,
@@ -295,11 +302,11 @@ export class VolunteerService {
       return contacts.map((contact) => this.mapContact(contact));
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
-  async getVolunteersByIds(ids: string[]): Promise<VolunteerDto[] | null> {
+  async getVolunteersByIds(ids: string[]): Promise<VolunteerDto[]> {
     try {
       const volunteers = await this.prisma.volunteer.findMany({
         where: {
@@ -312,26 +319,24 @@ export class VolunteerService {
       return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return [];
     }
   }
 
   async getVolunteerByAuthId(authId: string): Promise<VolunteerDto | null> {
     try {
-      const profile = await this.prisma.volunteer.findFirst({
+      const profile = await this.prisma.volunteer.findUnique({
         where: { authId },
       });
 
-      return this.mapVolunteer(profile);
+      return profile ? this.mapVolunteer(profile) : null;
     } catch (e) {
       this.logger.error(e);
-      return null;
+      return e;
     }
   }
 
-  async createVolunteerProfile(
-    request: CreateProfileDto,
-  ): Promise<VolunteerDto> {
+  async createProfile(request: CreateProfileDto): Promise<VolunteerDto | null> {
     const {
       authId,
       firstName,
@@ -353,11 +358,11 @@ export class VolunteerService {
           firstname: firstName,
           lastname: lastName,
           avatarUrl,
-          description,
-          organization,
+          description: description || undefined,
+          organization: organization || undefined,
           cityIds,
           activityIds,
-          verificationStatus: 'requested',
+          verificationStatus: VerificationStatus.requested.toString(),
           cities: {
             create: cityIds.map((cityId) => ({
               city: {
@@ -431,10 +436,11 @@ export class VolunteerService {
     }
   }
 
-  async updateVolunteerProfile(
+  async updateProfile(
     authId: string,
     request: UpdateProfileDto,
-  ): Promise<VolunteerDto> {
+    volunteerProfile: VolunteerDto,
+  ): Promise<VolunteerDto | null> {
     try {
       const {
         firstName,
@@ -448,8 +454,6 @@ export class VolunteerService {
         paymentOptions,
         contacts,
       } = request;
-
-      const volunteerProfile = await this.getVolunteerByAuthId(authId);
 
       const activitiesToCreate =
         activityIds.length > 0
@@ -519,27 +523,50 @@ export class VolunteerService {
             })),
           },
           social: {
-            create: social.create.map(({ url, socialProviderId }) => ({
-              url,
-              providerIds: [socialProviderId],
-            })),
-            delete: social.delete.map((id) => ({ id })),
+            create: social
+              ? social.create.map(({ url, socialProviderId }) => ({
+                  url,
+                  providerIds: [socialProviderId],
+                }))
+              : undefined,
+            update: social
+              ? social.delete.map((id) => ({
+                  where: { id },
+                  data: {
+                    deletedAt: new Date(),
+                  },
+                }))
+              : undefined,
           },
           paymentOptions: {
-            create: paymentOptions.create.map(
-              ({ metadata, paymentProviderId }) => ({
-                metadata: JSON.parse(metadata),
-                providerIds: [paymentProviderId],
-              }),
-            ),
-            delete: paymentOptions.delete.map((id) => ({ id })),
+            create: paymentOptions
+              ? paymentOptions.create.map(
+                  ({ metadata, paymentProviderId }) => ({
+                    metadata: JSON.parse(metadata),
+                    providerIds: [paymentProviderId],
+                  }),
+                )
+              : undefined,
+            update: paymentOptions
+              ? paymentOptions.delete.map((id) => ({
+                  where: { id },
+                  data: { deletedAt: new Date() },
+                }))
+              : undefined,
           },
           contacts: {
-            create: contacts.create.map(({ metadata, contactProviderId }) => ({
-              metadata: JSON.parse(metadata),
-              providerIds: [contactProviderId],
-            })),
-            delete: contacts.delete.map((id) => ({ id })),
+            create: contacts
+              ? contacts.create.map(({ metadata, contactProviderId }) => ({
+                  metadata: JSON.parse(metadata),
+                  providerIds: [contactProviderId],
+                }))
+              : undefined,
+            update: contacts
+              ? contacts.delete.map((id) => ({
+                  where: { id },
+                  data: { deletedAt: new Date() },
+                }))
+              : undefined,
           },
         },
       });
@@ -551,20 +578,18 @@ export class VolunteerService {
     }
   }
 
-  async hideVolunteerProfile(request: HideProfileDto): Promise<VolunteerDto> {
+  async hideVolunteerProfile(authId: string): Promise<VolunteerDto | null> {
     try {
-      const { id } = request;
-
       const profile = await this.prisma.volunteer.update({
         where: {
-          id,
+          authId,
         },
         data: {
-          verificationStatus: 'hidden',
+          verificationStatus: VerificationStatus.hidden.toString(),
         },
       });
 
-      return this.mapVolunteer(profile);
+      return profile ? this.mapVolunteer(profile) : null;
     } catch (e) {
       this.logger.error(e);
       return null;
@@ -627,9 +652,9 @@ export class VolunteerService {
       authId,
       firstName: firstname,
       lastName: lastname,
-      description,
+      description: description || undefined,
       avatarUrl,
-      organization,
+      organization: organization || undefined,
       verificationStatus,
       cityIds,
       activityIds,

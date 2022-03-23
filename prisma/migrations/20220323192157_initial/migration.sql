@@ -4,13 +4,14 @@ CREATE TABLE "Volunteer" (
     "authId" TEXT NOT NULL,
     "firstname" TEXT NOT NULL,
     "lastname" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
     "verificationStatus" TEXT NOT NULL,
-    "organization" TEXT NOT NULL,
+    "organization" TEXT,
     "avatarUrl" TEXT NOT NULL,
     "cityIds" TEXT[],
     "activityIds" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "hiddenAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Volunteer_pkey" PRIMARY KEY ("id")
 );
@@ -37,6 +38,7 @@ CREATE TABLE "VolunteerSocial" (
     "url" TEXT NOT NULL,
     "providerIds" TEXT[],
     "volunteerId" TEXT NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "VolunteerSocial_pkey" PRIMARY KEY ("id")
 );
@@ -55,6 +57,7 @@ CREATE TABLE "VolunteerPaymentOption" (
     "metadata" JSONB NOT NULL,
     "providerIds" TEXT[],
     "volunteerId" TEXT NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "VolunteerPaymentOption_pkey" PRIMARY KEY ("id")
 );
@@ -73,6 +76,7 @@ CREATE TABLE "VolunteerContact" (
     "metadata" JSONB NOT NULL,
     "providerIds" TEXT[],
     "volunteerId" TEXT NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "VolunteerContact_pkey" PRIMARY KEY ("id")
 );
