@@ -1,5 +1,5 @@
 export const enum VerificationStatus {
-  requested,
-  verified,
-  hidden,
+  requested = 'requested',
+  verified = 'verified',
+  hidden = 'hidden',
 }

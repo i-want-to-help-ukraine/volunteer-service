@@ -46,6 +46,9 @@ export class VolunteerService {
                 id: startCursor,
               }
             : undefined,
+          where: {
+            verificationStatus: VerificationStatus.verified,
+          },
         });
 
         return {
@@ -67,7 +70,7 @@ export class VolunteerService {
             }
           : undefined,
         where: {
-          verificationStatus: VerificationStatus.verified.toString(),
+          verificationStatus: VerificationStatus.verified,
           activities:
             activityIds.length > 0
               ? {
@@ -362,7 +365,7 @@ export class VolunteerService {
           organization: organization || undefined,
           cityIds,
           activityIds,
-          verificationStatus: VerificationStatus.requested.toString(),
+          verificationStatus: VerificationStatus.requested,
           cities: {
             create: cityIds.map((cityId) => ({
               city: {
@@ -585,7 +588,7 @@ export class VolunteerService {
           authId,
         },
         data: {
-          verificationStatus: VerificationStatus.hidden.toString(),
+          verificationStatus: VerificationStatus.hidden,
         },
       });
 
