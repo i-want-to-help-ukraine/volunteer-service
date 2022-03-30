@@ -1,4 +1,8 @@
-import { Controller } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { VolunteerService } from '../../services/volunteer/volunteer.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
@@ -33,10 +37,10 @@ export class VolunteerController {
     const volunteersResult = await this.volunteerService.searchVolunteers(
       request,
     );
-    const totalCount = await this.volunteerService.getVolunteersCount();
+    const totalCount = (await this.volunteerService.getVolunteersCount()) || 0;
     const { hasNextPage, volunteers } = volunteersResult;
     const endCursor =
-      volunteers.length > 0 ? volunteers[volunteers.length - 1].id : null;
+      volunteers.length > 0 ? volunteers[volunteers.length - 1].id : undefined;
 
     return {
       totalCount,
@@ -202,6 +206,10 @@ export class VolunteerController {
       request.authId,
     );
 
+    if (volunteer === null) {
+      throw new BadRequestException();
+    }
+
     return {
       volunteer,
     };
@@ -211,9 +219,19 @@ export class VolunteerController {
   async createProfile(
     request: CreateProfileDto,
   ): Promise<VolunteerResponseDto> {
-    const volunteer = await this.volunteerService.createVolunteerProfile(
-      request,
+    const foundVolunteer = await this.volunteerService.getVolunteerByAuthId(
+      request.authId,
     );
+
+    if (foundVolunteer !== null) {
+      throw new BadRequestException();
+    }
+
+    const volunteer = await this.volunteerService.createProfile(request);
+
+    if (volunteer === null) {
+      throw new InternalServerErrorException();
+    }
 
     return {
       volunteer,
@@ -224,10 +242,23 @@ export class VolunteerController {
   async updateProfile(
     request: UpdateProfileDto,
   ): Promise<VolunteerResponseDto> {
-    const volunteer = await this.volunteerService.updateVolunteerProfile(
+    const foundVolunteer = await this.volunteerService.getVolunteerByAuthId(
+      request.authId,
+    );
+
+    if (foundVolunteer === null) {
+      throw new BadRequestException();
+    }
+
+    const volunteer = await this.volunteerService.updateProfile(
       request.authId,
       request,
+      foundVolunteer,
     );
+
+    if (volunteer === null) {
+      throw new InternalServerErrorException();
+    }
 
     return {
       volunteer,
@@ -236,7 +267,21 @@ export class VolunteerController {
 
   @GrpcMethod('VolunteerServiceRPC', 'hideProfile')
   async hideProfile(request: HideProfileDto): Promise<VolunteerResponseDto> {
-    const volunteer = await this.volunteerService.hideVolunteerProfile(request);
+    const foundVolunteer = await this.volunteerService.getVolunteerByAuthId(
+      request.authId,
+    );
+
+    if (foundVolunteer === null) {
+      throw new BadRequestException();
+    }
+
+    const volunteer = await this.volunteerService.hideVolunteerProfile(
+      request.authId,
+    );
+
+    if (volunteer === null) {
+      throw new InternalServerErrorException();
+    }
 
     return {
       volunteer,

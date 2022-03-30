@@ -15,9 +15,9 @@ model Volunteer {
     authId                  String                      @unique(map: "Volunteer_authId_unique_constraint")
     firstname               String
     lastname                String
-    description             String
+    description             String?
     verificationStatus      String
-    organization            String
+    organization            String?
     avatarUrl               String
     cityIds                 String[]
     activityIds             String[]
@@ -26,7 +26,8 @@ model Volunteer {
     social                  VolunteerSocial[]
     paymentOptions          VolunteerPaymentOption[]
     contacts                VolunteerContact[]
-    createdAt               DateTime @default(now())
+    createdAt               DateTime                    @default(now())
+    hiddenAt                DateTime                    @default(now())
 }
 
 model CitiesOnVolunteers {
@@ -54,6 +55,7 @@ model VolunteerSocial {
     providers               SocialProvidersOnVolunteerSocial[]
     volunteer               Volunteer                           @relation(fields: [volunteerId], references: [id])
     volunteerId             String
+    deletedAt               DateTime?
 }
 
 model SocialProvidersOnVolunteerSocial {
@@ -72,6 +74,7 @@ model VolunteerPaymentOption {
     paymentProviders          PaymentProvidersOnVolunteerPaymentOptions[]
     volunteer                 Volunteer                       @relation(fields: [volunteerId], references: [id])
     volunteerId               String
+    deletedAt                 DateTime?
 }
 
 model PaymentProvidersOnVolunteerPaymentOptions {
@@ -90,6 +93,7 @@ model VolunteerContact {
     providers               VolunteerContactsOnContactProviders[]
     volunteer               Volunteer                               @relation(fields: [volunteerId], references: [id])
     volunteerId             String
+    deletedAt               DateTime?
 }
 
 model VolunteerContactsOnContactProviders {
