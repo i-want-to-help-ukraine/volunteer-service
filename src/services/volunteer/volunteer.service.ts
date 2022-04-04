@@ -38,7 +38,7 @@ export class VolunteerService {
       if (cityIds.length === 0 && activityIds.length === 0) {
         const volunteers = await this.prisma.volunteer.findMany({
           orderBy: {
-            createdAt: 'asc',
+            createdAt: 'desc',
           },
           take: offset + 1,
           cursor: startCursor

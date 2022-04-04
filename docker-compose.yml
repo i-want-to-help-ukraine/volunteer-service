@@ -6,7 +6,7 @@ services:
     command: ["postgres", "-c", "log_statement=all"]
     restart: always
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: volunteer-service
       POSTGRES_PASSWORD: root
     ports:
       - "5432:5432"
