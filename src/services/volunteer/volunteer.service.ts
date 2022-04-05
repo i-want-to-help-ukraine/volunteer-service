@@ -114,7 +114,11 @@ export class VolunteerService {
 
   getVolunteersCount(): Promise<number | null> {
     try {
-      return this.prisma.volunteer.count();
+      return this.prisma.volunteer.count({
+        where: {
+          verificationStatus: VerificationStatus.verified,
+        },
+      });
     } catch (e) {
       this.logger.error(e);
       return Promise.resolve(null);
