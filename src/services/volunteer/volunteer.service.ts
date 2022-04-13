@@ -38,7 +38,7 @@ export class VolunteerService {
       if (cityIds.length === 0 && activityIds.length === 0) {
         const volunteers = await this.prisma.volunteer.findMany({
           orderBy: {
-            createdAt: 'asc',
+            createdAt: 'desc',
           },
           take: offset + 1,
           cursor: startCursor
@@ -114,7 +114,11 @@ export class VolunteerService {
 
   getVolunteersCount(): Promise<number | null> {
     try {
-      return this.prisma.volunteer.count();
+      return this.prisma.volunteer.count({
+        where: {
+          verificationStatus: VerificationStatus.verified,
+        },
+      });
     } catch (e) {
       this.logger.error(e);
       return Promise.resolve(null);
