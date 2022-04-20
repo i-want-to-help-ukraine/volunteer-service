@@ -444,7 +444,6 @@ export class VolunteerService {
   }
 
   async updateProfile(
-    authId: string,
     request: UpdateProfileDto,
     volunteerProfile: VolunteerDto,
   ): Promise<VolunteerDto | null> {
@@ -600,6 +599,46 @@ export class VolunteerService {
     } catch (e) {
       this.logger.error(e);
       return null;
+    }
+  }
+
+  async changeVolunteerStatus(
+    volunteerId: string,
+    verificationStatus: VerificationStatus,
+  ): Promise<VolunteerDto | null> {
+    try {
+      const profile = await this.prisma.volunteer.update({
+        where: {
+          id: volunteerId,
+        },
+        data: {
+          verificationStatus,
+        },
+      });
+
+      return profile ? this.mapVolunteer(profile) : null;
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
+  async getRequested(): Promise<VolunteerDto[]> {
+    try {
+      const volunteers = await this.prisma.volunteer.findMany({
+        orderBy: {
+          createdAt: 'asc',
+        },
+        where: {
+          verificationStatus: VerificationStatus.requested,
+        },
+      });
+
+      return volunteers.map((volunteer) => this.mapVolunteer(volunteer));
+    } catch (e) {
+      this.logger.error(e);
+
+      return [];
     }
   }
 

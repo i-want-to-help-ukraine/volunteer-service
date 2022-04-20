@@ -3,4 +3,5 @@ export const enum VerificationStatus {
   verified = 'verified',
   hidden = 'hidden',
   banned = 'banned',
+  rejected = 'rejected',
 }
