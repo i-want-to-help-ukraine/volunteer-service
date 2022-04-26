@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Controller,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { VolunteerService } from '../../services/volunteer/volunteer.service';
 import { GrpcMethod } from '@nestjs/microservices';
@@ -25,7 +26,10 @@ import {
   UpdateProfileDto,
   HideProfileDto,
   SearchVolunteerResponse,
+  ChangeVolunteerStatusRequestDto,
+  PatchVolunteerRequestDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
+import { VerificationStatus } from '../../enums/verification-status';
 
 @Controller('volunteer')
 export class VolunteerController {
@@ -39,6 +43,7 @@ export class VolunteerController {
     );
     const totalCount = (await this.volunteerService.getVolunteersCount()) || 0;
     const { hasNextPage, volunteers } = volunteersResult;
+    // TODO: end cursor should be the last + 1
     const endCursor =
       volunteers.length > 0 ? volunteers[volunteers.length - 1].id : undefined;
 
@@ -251,7 +256,6 @@ export class VolunteerController {
     }
 
     const volunteer = await this.volunteerService.updateProfile(
-      request.authId,
       request,
       foundVolunteer,
     );
@@ -285,6 +289,93 @@ export class VolunteerController {
 
     return {
       volunteer,
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'changeVolunteerStatus')
+  async changeVolunteerStatus(
+    request: ChangeVolunteerStatusRequestDto,
+  ): Promise<VolunteerResponseDto> {
+    if (
+      request.status !== VerificationStatus.verified.toString() &&
+      request.status !== VerificationStatus.rejected.toString()
+    ) {
+      throw new BadRequestException();
+    }
+
+    const volunteer = await this.volunteerService.changeVolunteerStatus(
+      request.volunteerId,
+      request.status as VerificationStatus,
+    );
+
+    if (volunteer === null) {
+      throw new InternalServerErrorException();
+    }
+
+    return {
+      volunteer,
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'patchVolunteer')
+  async patchVolunteer(
+    request: PatchVolunteerRequestDto,
+  ): Promise<VolunteerResponseDto> {
+    const profile = (
+      await this.volunteerService.getVolunteersByIds([request.volunteerId])
+    )[0];
+
+    if (profile === null) {
+      throw new NotFoundException();
+    }
+
+    const {
+      firstName,
+      lastName,
+      description,
+      avatarUrl,
+      organization,
+      cityIds,
+      activityIds,
+      social,
+      paymentOptions,
+      contacts,
+    } = request;
+
+    const updateProfile: UpdateProfileDto = {
+      authId: profile.authId,
+      firstName,
+      lastName,
+      description,
+      avatarUrl,
+      organization,
+      cityIds,
+      activityIds,
+      social,
+      paymentOptions,
+      contacts,
+    };
+
+    const volunteer = await this.volunteerService.updateProfile(
+      updateProfile,
+      profile,
+    );
+
+    if (volunteer === null) {
+      throw new InternalServerErrorException();
+    }
+
+    return {
+      volunteer,
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'getRequestedVolunteers')
+  async getRequestedVolunteers(): Promise<VolunteersResponseDto> {
+    const volunteers = await this.volunteerService.getRequested();
+
+    return {
+      volunteers,
     };
   }
 }
