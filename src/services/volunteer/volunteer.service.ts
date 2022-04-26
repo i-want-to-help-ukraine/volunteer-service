@@ -2,22 +2,26 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   ActivityDto,
+  AddActivityDto,
+  AddContactProviderDto,
+  AddPaymentProviderDto,
+  AddSocialProviderDto,
   CityDto,
+  ContactProviderDto,
+  CreateProfileDto,
   PaymentProviderDto,
+  SearchVolunteersDto,
+  SocialProviderDto,
+  UpdateProfileDto,
+  VolunteerContactDto,
   VolunteerDto,
   VolunteerPaymentOptionDto,
   VolunteerSocialDto,
-  SocialProviderDto,
-  CreateProfileDto,
-  UpdateProfileDto,
-  SearchVolunteersDto,
-  VolunteerContactDto,
-  ContactProviderDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import {
   Volunteer,
-  VolunteerPaymentOption,
   VolunteerContact,
+  VolunteerPaymentOption,
   VolunteerSocial,
 } from '@prisma/client';
 import { VerificationStatus } from '../../enums/verification-status';
@@ -639,6 +643,72 @@ export class VolunteerService {
       this.logger.error(e);
 
       return [];
+    }
+  }
+
+  async addActivity({
+    title,
+    description,
+  }: AddActivityDto): Promise<ActivityDto | null> {
+    try {
+      return this.prisma.activity.create({
+        data: {
+          title,
+          description,
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+
+      return null;
+    }
+  }
+
+  async addPaymentProvider({
+    title,
+  }: AddPaymentProviderDto): Promise<PaymentProviderDto | null> {
+    try {
+      return this.prisma.paymentProvider.create({
+        data: {
+          title,
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+
+      return null;
+    }
+  }
+
+  async addContactProvider({
+    title,
+  }: AddContactProviderDto): Promise<ContactProviderDto | null> {
+    try {
+      return this.prisma.contactProvider.create({
+        data: {
+          title,
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+
+      return null;
+    }
+  }
+
+  async addSocialProvider({
+    title,
+  }: AddSocialProviderDto): Promise<SocialProviderDto | null> {
+    try {
+      return this.prisma.socialProvider.create({
+        data: {
+          title,
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+
+      return null;
     }
   }
 
