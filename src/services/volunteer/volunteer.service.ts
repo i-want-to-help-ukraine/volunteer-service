@@ -45,7 +45,7 @@ export class VolunteerService {
             createdAt: 'desc',
           },
           skip: offset,
-          take: count + 1,
+          take: count,
           cursor: startCursor
             ? {
                 id: startCursor,
@@ -69,7 +69,7 @@ export class VolunteerService {
           createdAt: 'asc',
         },
         skip: offset,
-        take: count + 1,
+        take: count,
         cursor: startCursor
           ? {
               id: startCursor,
