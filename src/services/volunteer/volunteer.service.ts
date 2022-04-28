@@ -37,14 +37,15 @@ export class VolunteerService {
     volunteers: VolunteerDto[];
   }> {
     try {
-      const { cityIds, activityIds, offset, startCursor } = request;
+      const { cityIds, activityIds, count, offset, startCursor } = request;
 
       if (cityIds.length === 0 && activityIds.length === 0) {
         const volunteers = await this.prisma.volunteer.findMany({
           orderBy: {
             createdAt: 'desc',
           },
-          take: offset + 1,
+          skip: offset,
+          take: count + 1,
           cursor: startCursor
             ? {
                 id: startCursor,
@@ -67,7 +68,8 @@ export class VolunteerService {
         orderBy: {
           createdAt: 'asc',
         },
-        take: offset + 1,
+        skip: offset,
+        take: count + 1,
         cursor: startCursor
           ? {
               id: startCursor,
