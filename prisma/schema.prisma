@@ -26,6 +26,7 @@ model Volunteer {
     social                  VolunteerSocial[]
     paymentOptions          VolunteerPaymentOption[]
     contacts                VolunteerContact[]
+    reports                 VolunteerReport[]
     createdAt               DateTime                    @default(now())
     hiddenAt                DateTime                    @default(now())
 }
@@ -131,8 +132,28 @@ model City {
 }
 
 model Activity {
-    id                      String    @default(cuid()) @id
+    id                      String                      @default(cuid()) @id
     title                   String
     description             String
     volunteers              ActivitiesOnVolunteers[]
+}
+
+model VolunteerReport {
+    id                      String              @default(cuid()) @id
+    title                   String
+    description             String
+    proofsOfPayment         ProofOfPayment[]
+    volunteer               Volunteer           @relation(fields: [volunteerId], references: [id])
+    volunteerId             String
+    publishState            String?
+    deletedAt               DateTime?
+}
+
+model ProofOfPayment {
+    id                      String               @default(cuid()) @id
+    imageUrls               String[]
+    paidAmount              String
+    report                  VolunteerReport      @relation(fields: [reportId], references: [id])
+    reportId                String
+    deletedAt               DateTime?
 }

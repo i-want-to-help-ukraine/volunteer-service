@@ -5,6 +5,7 @@ import {
   AddActivityDto,
   AddContactProviderDto,
   AddPaymentProviderDto,
+  AddReportDto,
   AddSocialProviderDto,
   CityDto,
   ContactProviderDto,
@@ -17,12 +18,14 @@ import {
   VolunteerDto,
   VolunteerPaymentOptionDto,
   VolunteerSocialDto,
+  ReportDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import {
   Volunteer,
   VolunteerContact,
   VolunteerPaymentOption,
   VolunteerSocial,
+  VolunteerReport,
 } from '@prisma/client';
 import { VerificationStatus } from '../../enums/verification-status';
 
@@ -714,6 +717,43 @@ export class VolunteerService {
     }
   }
 
+  async addReport(addReportDto: AddReportDto): Promise<ReportDto | null> {
+    try {
+      const { title, description, volunteerId } = addReportDto;
+
+      const report = await this.prisma.volunteerReport.create({
+        data: {
+          title,
+          description,
+          volunteerId,
+          proofsOfPayment: {
+            create: [],
+          },
+        },
+      });
+
+      return this.mapReport(report);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async getReportsByIds(ids: string[]): Promise<ReportDto[]> {
+    try {
+      const reports = await this.prisma.volunteerReport.findMany({
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+      });
+
+      return reports.map((report) => this.mapReport(report));
+    } catch (e) {
+      return [];
+    }
+  }
+
   private mapVolunteerSocial(
     volunteerSocial: VolunteerSocial,
   ): VolunteerSocialDto {
@@ -776,6 +816,17 @@ export class VolunteerService {
       verificationStatus,
       cityIds,
       activityIds,
+    };
+  }
+
+  private mapReport(report: VolunteerReport): ReportDto {
+    const { id, title, description } = report;
+
+    return {
+      id,
+      title,
+      description,
+      proofsOfPayment: [],
     };
   }
 }

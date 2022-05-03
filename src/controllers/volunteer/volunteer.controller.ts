@@ -36,6 +36,9 @@ import {
   PaymentProviderDto,
   ContactProviderDto,
   SocialProviderDto,
+  AddReportDto,
+  GetReportsRequestDto,
+  ReportDto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import { VerificationStatus } from '../../enums/verification-status';
 
@@ -411,5 +414,15 @@ export class VolunteerController {
     request: AddSocialProviderDto,
   ): Promise<SocialProviderDto | null> {
     return this.volunteerService.addSocialProvider(request);
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'addReport')
+  addReport(request: AddReportDto): Promise<ReportDto | null> {
+    return this.volunteerService.addReport(request);
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'getReportsByIds')
+  getReportsByIds(request: GetReportsRequestDto): Promise<ReportDto[]> {
+    return this.volunteerService.getReportsByIds(request.volunteerIds);
   }
 }
