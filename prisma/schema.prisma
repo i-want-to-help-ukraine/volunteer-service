@@ -141,19 +141,12 @@ model Activity {
 model VolunteerReport {
     id                      String              @default(cuid()) @id
     title                   String
-    description             String
-    proofsOfPayment         ProofOfPayment[]
+    imageUrls               String[]
+    paidPositions           String[]
+    paidAmount              String
     volunteer               Volunteer           @relation(fields: [volunteerId], references: [id])
     volunteerId             String
-    publishState            String?
-    deletedAt               DateTime?
-}
-
-model ProofOfPayment {
-    id                      String               @default(cuid()) @id
-    imageUrls               String[]
-    paidAmount              String
-    report                  VolunteerReport      @relation(fields: [reportId], references: [id])
-    reportId                String
+    publishState            String              @default("DRAFT")
+    publishDate             DateTime?
     deletedAt               DateTime?
 }

@@ -719,16 +719,16 @@ export class VolunteerService {
 
   async addReport(addReportDto: AddReportDto): Promise<ReportDto | null> {
     try {
-      const { title, description, volunteerId } = addReportDto;
+      const { title, imageUrls, paidPositions, paidAmount, volunteerId } =
+        addReportDto;
 
       const report = await this.prisma.volunteerReport.create({
         data: {
           title,
-          description,
+          imageUrls,
+          paidAmount,
+          paidPositions,
           volunteerId,
-          proofsOfPayment: {
-            create: [],
-          },
         },
       });
 
@@ -820,13 +820,26 @@ export class VolunteerService {
   }
 
   private mapReport(report: VolunteerReport): ReportDto {
-    const { id, title, description } = report;
+    const {
+      id,
+      title,
+      imageUrls,
+      paidAmount,
+      paidPositions,
+      volunteerId,
+      publishDate,
+      publishState,
+    } = report;
 
     return {
       id,
       title,
-      description,
-      proofsOfPayment: [],
+      imageUrls,
+      paidAmount,
+      paidPositions,
+      volunteerId,
+      publishDate: publishDate?.toString(),
+      publishState,
     };
   }
 }
