@@ -13,6 +13,7 @@ import {
   SearchVolunteersDto,
   SocialProviderDto,
   UpdateProfileDto,
+  UpdateProfileV2Dto,
   VolunteerContactDto,
   VolunteerDto,
   VolunteerPaymentOptionDto,
@@ -35,15 +36,13 @@ export class VolunteerService {
   async searchVolunteers(request: SearchVolunteersDto): Promise<{
     hasNextPage: boolean;
     volunteers: VolunteerDto[];
+    totalCount: number;
   }> {
     try {
       const { cityIds, activityIds, count, offset, startCursor } = request;
 
       if (cityIds.length === 0 && activityIds.length === 0) {
-        const volunteers = await this.prisma.volunteer.findMany({
-          orderBy: {
-            createdAt: 'desc',
-          },
+        const filter = {
           skip: offset,
           take: count,
           cursor: startCursor
@@ -54,9 +53,21 @@ export class VolunteerService {
           where: {
             verificationStatus: VerificationStatus.verified,
           },
+        };
+
+        const volunteers = await this.prisma.volunteer.findMany({
+          ...filter,
+          orderBy: {
+            createdAt: 'desc',
+          },
+        });
+
+        const totalCount = await this.prisma.volunteer.count({
+          ...filter,
         });
 
         return {
+          totalCount,
           hasNextPage: volunteers.length === offset + 1,
           volunteers: volunteers.map((volunteer) =>
             this.mapVolunteer(volunteer),
@@ -64,10 +75,7 @@ export class VolunteerService {
         };
       }
 
-      const volunteers = await this.prisma.volunteer.findMany({
-        orderBy: {
-          createdAt: 'asc',
-        },
+      const filter = {
         skip: offset,
         take: count,
         cursor: startCursor
@@ -102,9 +110,20 @@ export class VolunteerService {
                 }
               : undefined,
         },
+      };
+      const volunteers = await this.prisma.volunteer.findMany({
+        ...filter,
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      const totalCount = await this.prisma.volunteer.count({
+        ...filter,
       });
 
       return {
+        totalCount,
         hasNextPage: volunteers.length === offset + 1,
         volunteers: volunteers.map((volunteer) => this.mapVolunteer(volunteer)),
       };
@@ -112,6 +131,7 @@ export class VolunteerService {
       this.logger.error(e);
 
       return {
+        totalCount: 0,
         hasNextPage: false,
         volunteers: [],
       };
@@ -579,6 +599,139 @@ export class VolunteerService {
                   data: { deletedAt: new Date() },
                 }))
               : undefined,
+          },
+        },
+      });
+
+      return this.mapVolunteer(updatedProfile);
+    } catch (e) {
+      this.logger.error(e);
+      return null;
+    }
+  }
+
+  async updateProfileV2(
+    request: UpdateProfileV2Dto,
+    foundVolunteer: VolunteerDto,
+  ): Promise<VolunteerDto | null> {
+    try {
+      const {
+        firstName,
+        lastName,
+        avatarUrl,
+        description,
+        organization,
+        activityIds,
+        cityIds,
+        social,
+        paymentOptions,
+        contacts,
+      } = request;
+
+      const activitiesToCreate =
+        activityIds.length > 0
+          ? activityIds.filter(
+              (activityId) => !foundVolunteer.activityIds.includes(activityId),
+            )
+          : [];
+      const activitiesToDelete =
+        activityIds.length > 0
+          ? foundVolunteer.activityIds.filter(
+              (volunteerActivityId) =>
+                !activityIds.includes(volunteerActivityId),
+            )
+          : [];
+
+      const citiesToCreate =
+        cityIds.length > 0
+          ? cityIds.filter((cityId) => !foundVolunteer.cityIds.includes(cityId))
+          : [];
+      const citiesToDelete =
+        cityIds.length > 0
+          ? foundVolunteer.cityIds.filter((cityId) => !cityIds.includes(cityId))
+          : [];
+
+      const [volunteerSocial, volunteerContacts, volunteerPaymentOptions] =
+        await Promise.all([
+          this.getVolunteerSocial([foundVolunteer.id]),
+          this.getVolunteerContacts([foundVolunteer.id]),
+          this.getVolunteerPaymentOptions([foundVolunteer.id]),
+        ]);
+
+      const updatedProfile = await this.prisma.volunteer.update({
+        where: {
+          id: foundVolunteer.id,
+        },
+        data: {
+          firstname: firstName,
+          lastname: lastName,
+          description,
+          organization,
+          avatarUrl,
+          activityIds: activityIds.length > 0 ? activityIds : undefined,
+          cityIds: cityIds.length > 0 ? cityIds : undefined,
+          activities: {
+            create: activitiesToCreate.map((activityId) => ({
+              activity: {
+                connect: {
+                  id: activityId,
+                },
+              },
+            })),
+            delete: activitiesToDelete.map((activityId) => ({
+              volunteerId_activityId: {
+                activityId,
+                volunteerId: foundVolunteer.id,
+              },
+            })),
+          },
+          cities: {
+            create: citiesToCreate.map((cityId) => ({
+              city: {
+                connect: {
+                  id: cityId,
+                },
+              },
+            })),
+            delete: citiesToDelete.map((cityId) => ({
+              volunteerId_cityId: { cityId, volunteerId: foundVolunteer.id },
+            })),
+          },
+          social: {
+            create: social
+              ? social.map(({ url, socialProviderId }) => ({
+                  url,
+                  providerIds: [socialProviderId],
+                }))
+              : undefined,
+            update: volunteerSocial.map(({ id }) => ({
+              where: { id },
+              data: { deletedAt: new Date() },
+            })),
+          },
+          paymentOptions: {
+            create: paymentOptions
+              ? paymentOptions.map(({ metadata, paymentProviderId }) => ({
+                  metadata: JSON.parse(metadata),
+                  providerIds: [paymentProviderId],
+                }))
+              : undefined,
+            update: volunteerPaymentOptions.map(({ id }) => ({
+              where: { id },
+              data: { deletedAt: new Date() },
+            })),
+          },
+          contacts: {
+            create: contacts
+              ? contacts.map(({ metadata, contactProviderId }) => ({
+                  metadata: JSON.parse(metadata),
+                  providerIds: [contactProviderId],
+                }))
+              : undefined,
+            update: volunteerContacts.map(({ id }) => ({
+              where: { id },
+              data: { deletedAt: new Date() },
+            })),
           },
         },
       });

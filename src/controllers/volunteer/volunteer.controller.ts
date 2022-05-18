@@ -36,6 +36,7 @@ import {
   PaymentProviderDto,
   ContactProviderDto,
   SocialProviderDto,
+  UpdateProfileV2Dto,
 } from '@i-want-to-help-ukraine/protobuf/types/volunteer-service';
 import { VerificationStatus } from '../../enums/verification-status';
 
@@ -49,9 +50,7 @@ export class VolunteerController {
     const volunteersResult = await this.volunteerService.searchVolunteers(
       request,
     );
-    const totalCount = (await this.volunteerService.getVolunteersCount()) || 0;
-    const { hasNextPage, volunteers } = volunteersResult;
-    // TODO: end cursor should be the last + 1
+    const { hasNextPage, volunteers, totalCount } = volunteersResult;
     const endCursor =
       volunteers.length > 0 ? volunteers[volunteers.length - 1].id : undefined;
 
@@ -264,6 +263,32 @@ export class VolunteerController {
     }
 
     const volunteer = await this.volunteerService.updateProfile(
+      request,
+      foundVolunteer,
+    );
+
+    if (volunteer === null) {
+      throw new InternalServerErrorException();
+    }
+
+    return {
+      volunteer,
+    };
+  }
+
+  @GrpcMethod('VolunteerServiceRPC', 'updateProfileV2')
+  async updateProfileV2(
+    request: UpdateProfileV2Dto,
+  ): Promise<VolunteerResponseDto> {
+    const foundVolunteer = await this.volunteerService.getVolunteerByAuthId(
+      request.authId,
+    );
+
+    if (foundVolunteer === null) {
+      throw new BadRequestException();
+    }
+
+    const volunteer = await this.volunteerService.updateProfileV2(
       request,
       foundVolunteer,
     );
